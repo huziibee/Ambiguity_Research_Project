@@ -1,0 +1,30 @@
+.env
+__pycache__/
+*.pyc
+results/predictions/
+results/metrics/
+results/tables/
+results/figures/
+cache/
+
+# Ignore raw dataset directories completely to keep the repository lightweight
+data/raw/AmbiK/
+data/raw/CLARA-Dataset/
+data/raw/ClariQ/
+data/raw/CollaborativeManipulationCorpus/
+data/raw/Dynamic-RDMM/
+data/raw/IndirectRequests/
+data/raw/RefCOCO/
+data/raw/ReferIt3D/
+data/raw/SafeAgentBench/
+data/raw/TEACh/
+data/raw/teach_tatc/
+
+# Ignore interim mapping data
+data/interim/
+
+# Ignore processed data outputs except for dev_20
+data/processed/**/*.jsonl
+data/processed/**/*.json
+!data/processed/.gitkeep
+!data/processed/dev_20.jsonl
