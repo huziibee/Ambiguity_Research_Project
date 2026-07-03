@@ -1,26 +1,52 @@
-# Risk-Aware Ambiguity Manager — Dataset Standardization & Build Plan
+# Risk-Aware Ambiguity Manager - Dataset Standardization & Build Plan
 
 > **Project**: A Risk-Aware Ambiguity Manager for Compound Ambiguous Robot Commands
 > **Student**: Mohammed Bangie, 2610990
 > **Supervisors**: Steven James & Benjamin Rosman
-> **Scope**: NLU coordination/routing layer — not physical robotics
+> **Scope**: NLU coordination/routing layer, not physical robotics
 > **Primary research question**: Does a type-and-risk-aware ambiguity manager improve routing decisions for compound ambiguous robot commands compared to direct LLM interpretation and uniform or threshold-based baselines?
 
 ---
 
 ## How to Read This Plan
 
-This plan is organised **results-first**. The primary goal is to produce Table 1 (main results), then build outward: ablation tables, statistical tests, failure analysis, and optional extensions. Every section exists to support producing defensible empirical evidence for the final report.
+This plan is organised results-first. The primary goal is to produce defensible final evaluation results on a frozen human-approved test set, then build outward to ablations, statistical tests, failure analysis, and optional extensions.
 
-**Core contribution**: the type-and-risk-aware routing policy. Everything else — parsing, ambiguity classification, safety integration, dataset construction — is infrastructure that supports evaluating whether that routing policy works.
+The core contribution is the type-and-risk-aware routing policy. Parsing, ambiguity classification, risk prediction, dataset construction, and tooling are infrastructure for evaluating whether that routing policy works.
+
+The primary experiment must use **Gemini 3.1 Flash-Lite on the free tier first**. HPC is not part of the core method. HPC is only a fallback or accelerator if Gemini throttles, local execution becomes impractical, or later optional larger runs are explicitly approved. Supervised fine-tuning is not core to the project unless a later document explicitly marks it as optional or fallback.
+
+Gold labels are human-approved labels. Final evaluation uses each system's **predicted risk**. Gold risk is retained for annotation, diagnostics, error analysis, and optional ablations only.
+
+### Binding Dataset Target
+
+The dataset target for the main study is **310 unique human-labelled examples**:
+
+| Split | Size | Role |
+|-------|------|------|
+| `dev_100` | 100 | Development, tuning, prompt iteration, and ablation debugging |
+| `train` | 60 | Optional development/training split only; not required for the primary Gemini experiment |
+| `test` | 150 | Frozen final evaluation split |
+| `dev_20` | 20 | Smoke-test subset of `dev_100`; never reported as final evidence |
+
+`dev_20` must be a subset of `dev_100`, not an additional split. The 310-example total is counted as `dev_100 + train + test`, with `dev_20` included inside `dev_100`.
+
+TEACh remains included at a small count because the proposal promised it. It should be represented enough to support methodology alignment, but it must not dominate the dataset or delay the main experiment.
 
 ### Priority Classification
 
 | Priority | Meaning | Examples |
-|----------|---------|---------|
-| **MUST** | Project fails without it | Schema, dev_20 experiment, baselines, proposed router (SFT open-source LLM), SFT/LoRA fine-tuning phase, context sampling, predicted risk evaluation, Table 1, test set, synthetic test expansion, blind manual validation, failure analysis |
-| **SHOULD** | Strengthens the report significantly | IAA (κ ≥ 0.75), ablations, statistical tests, bootstrap CIs, data selection log |
-| **COULD** | Useful if time permits | TEACh data, safety API integration, rule-only manager ablation |
+|----------|---------|----------|
+| **MUST** | Project fails without it | Shared schema, 310 human-approved examples, `dev_100`, `test`, `dev_20` smoke subset, baselines, Gemini 3.1 Flash-Lite primary run, proposed router, predicted-risk final evaluation, Table 1, data selection log, failure analysis |
+| **SHOULD** | Strengthens the report significantly | Inter-annotator agreement, ablations, statistical tests, bootstrap CIs, risk and ambiguity breakdowns, TEACh small-count inclusion |
+| **COULD** | Useful if time permits | HPC acceleration, larger optional runs, safety API integration, SFT/local LLM experiments, rule-only manager ablation |
+
+### Non-Core Unless Explicitly Marked Optional
+
+- No SFT or local-HPC model training is part of the primary experiment.
+- No gold-risk final evaluation is allowed as the main result.
+- No `dev_20` numbers should be presented as final findings.
+- No synthetic expansion replaces human-labelled examples.
 
 ---
 
@@ -34,13 +60,13 @@ This plan is organised **results-first**. The primary goal is to produce Table 1
 6. [Data Selection Logging](06_data_selection_logging.md)
 7. [Dataset Construction Plan](07_dataset_construction.md)
 8. [Systems Under Comparison](08_systems_under_comparison.md)
-9. [Proposed Router — Core Contribution](09_proposed_router.md)
+9. [Proposed Router - Core Contribution](09_proposed_router.md)
 10. [Ablation Studies](10_ablation_studies.md)
 11. [Statistical Significance Testing](11_statistical_testing.md)
 12. [Failure Analysis](12_failure_analysis.md)
-13. [Safety API Integration — Optional](13_safety_api.md)
-14. [HPC Execution Plan](14_hpc_execution.md)
-15. [Local LLM Guidance — Optional](15_sft_guidance.md)
+13. [Safety API Integration - Optional](13_safety_api.md)
+14. [HPC Execution Plan - Fallback/Optional](14_hpc_execution.md)
+15. [Local LLM/SFT Guidance - Optional](15_sft_guidance.md)
 16. [Tools: Required, Recommended, and Rejected](16_tools.md)
 17. [Repository Structure](17_repository_structure.md)
 18. [Reproducibility and Code Visibility](18_reproducibility.md)
@@ -49,322 +75,317 @@ This plan is organised **results-first**. The primary goal is to produce Table 1
 21. [Report Alignment](21_report_alignment.md)
 22. [Risks and Mitigations](22_risks_mitigations.md)
 
+## Coding LLM Checklist
+
+- [ ] Keep all implementation plans consistent with Gemini 3.1 Flash-Lite free-tier as the primary experiment backend.
+- [ ] Treat HPC, SFT, local LLMs, synthetic expansion, and safety API calls as fallback or optional unless a later task explicitly changes scope.
+- [ ] Implement split logic so `dev_20` is sampled from `dev_100`, not counted as extra data.
+- [ ] Ensure final evaluation scripts use predicted risk by default and reserve gold risk for diagnostics or named ablations.
+- [ ] Preserve TEACh as a small-count included source in dataset planning and reports.
+
+## Human Checklist
+
+- [ ] Confirm that the 310-example target is feasible with available human annotation time.
+- [ ] Approve the final dataset split sizes before any test-set freeze.
+- [ ] Verify that every gold label used in final evaluation has been human-approved.
+- [ ] Check that reported final results are from the frozen `test` split, not `dev_20` or `dev_100`.
+- [ ] Confirm that TEACh inclusion satisfies the proposal promise without displacing higher-value examples.
+
 ---
+
+**Next ->** [Target Outputs](01_target_outputs.md)
 
 ---
 
 ## 1. Target Outputs
 
-The project must produce these result artefacts. This is the definition of "done".
+The project is done only when final frozen-test evidence can answer the research question. The primary experiment uses **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed systems. HPC is only a fallback/accelerator if Gemini throttles or later optional larger runs are explicitly approved.
 
-### Required Tables
+All final main-result metrics must be computed on the frozen `test` split of **150 human-approved examples** using **predicted risk**. Gold risk may appear only in diagnostic tables, annotation summaries, and optional ablations.
+
+`dev_20` outputs are smoke-test artifacts and must not be presented as final empirical evidence. `dev_20` is a subset of `dev_100`, not an additional dataset split.
+
+## Required Tables
 
 | Table | Contents | Purpose |
 |-------|----------|---------|
-| **Table 1** | Main results: all systems × all primary metrics | Answer the research question |
-| **Table 2** | Ablation results: proposed vs no-risk vs no-type vs no-capability | Isolate what routing signals matter |
-| **Table 3** | Compound vs non-compound performance per system | Test the compound ambiguity hypothesis directly |
-| **Table 4** | Routing accuracy breakdown by risk level per system | Test whether risk-awareness helps |
-| **Table 5** | Routing accuracy breakdown by ambiguity type per system | Test whether type-awareness helps |
-| **Table 6** | Strategy confusion matrix for the proposed manager | Reveal systematic routing errors |
-| **Table 7** | Data selection summary (raw → filtered → included per source) | Methodology transparency |
-| **Table 8** | IAA summary (Cohen's κ per field, Jaccard for multi-label) | Annotation credibility |
-| **Table 9** | Statistical significance (McNemar's) and bootstrap 95% CIs | Credibility of comparisons |
-| **Table 10** | Failure analysis summary with representative error cases | Honest analysis of limitations |
+| Table 1 | Main results: all systems x primary metrics on frozen `test` with predicted risk | Directly answer the research question |
+| Table 2 | Ablations: full vs no-type vs no-risk vs no-capability | Show which routing signals matter |
+| Table 3 | Compound vs non-compound performance | Test the compound ambiguity claim |
+| Table 4 | Routing accuracy by predicted risk level, with gold-risk diagnostic comparison if needed | Test risk-awareness under realistic inference |
+| Table 5 | Routing accuracy by ambiguity type | Test type-awareness |
+| Table 6 | Strategy confusion matrix for proposed manager | Reveal routing error patterns |
+| Table 7 | Data selection summary | Show raw -> excluded -> 310 human-approved included counts |
+| Table 8 | IAA summary | Defend annotation reliability |
+| Table 9 | McNemar test and bootstrap 95% CIs | Support statistical interpretation |
+| Table 10 | Failure analysis summary with representative cases | Demonstrate understanding and limitations |
 
-### Required Figures
+## Required Figures
 
 | Figure | Type | Purpose |
 |--------|------|---------|
-| **Fig 1** | Architecture diagram (from proposal Figure 3.1) | Methodology — show what the system does |
-| **Fig 2** | Routing accuracy bar chart: all systems | Hero figure — conveys the main result |
-| **Fig 3** | Compound vs non-compound grouped bars | Visual evidence for compound hypothesis |
-| **Fig 4** | Strategy confusion matrix heatmap | Visual error patterns |
-| **Fig 5** | Routing accuracy by risk level (line/bar) | Risk-awareness impact |
-| **Fig 6** | Ablation comparison bar chart | What each signal contributes |
-| **Fig 7** | Error type distribution (stacked bar) | Failure analysis visual |
-| **Fig 8** | Bootstrap CI error bars for key metrics | Statistical credibility |
+| Fig 1 | Architecture diagram | Explain the method |
+| Fig 2 | Routing accuracy bar chart | Main visual result |
+| Fig 3 | Compound vs non-compound grouped bars | Compound ambiguity evidence |
+| Fig 4 | Strategy confusion matrix heatmap | Error pattern evidence |
+| Fig 5 | Routing accuracy by predicted risk level | Risk-awareness evidence under realistic inference |
+| Fig 6 | Ablation comparison | Signal contribution evidence |
+| Fig 7 | Error type distribution | Failure analysis evidence |
+| Fig 8 | Bootstrap CI error bars | Uncertainty evidence |
 
-### Required Statistics
+## Required Statistics
 
-- McNemar's test: proposed manager vs best-performing baseline on routing correctness
-- Bootstrap 95% CIs for: routing accuracy, compound-routing accuracy, high-risk routing accuracy, unsafe silent-resolution rate
-- Cohen's κ for: primary_ambiguity_type, risk_level, gold_strategy
-- Jaccard agreement for: ambiguity_types (multi-label)
+- McNemar's test: proposed manager vs best-performing baseline on strict routing correctness.
+- Bootstrap 95% CIs for routing accuracy, paired routing difference, compound-routing accuracy, high-risk routing accuracy, and unsafe silent-resolution rate.
+- Cohen's kappa for `primary_ambiguity_type`, `risk_level`, and `gold_strategy`.
+- Jaccard agreement for multi-label `ambiguity_types`.
 
-### Required Saved Outputs
+## Required Saved Outputs
 
-```
+```text
 results/
-├── predictions/*.jsonl          # Raw predictions per system
-├── metrics/*.json               # Computed metrics per system
-├── tables/*.csv                 # Tables 1–10 as CSV
-├── figures/*.png                # Figures 1–8
-├── statistics/
-│   ├── significance_results.json
-│   └── bootstrap_ci.json
-├── annotation/
-│   └── iaa_results.json
-└── failure_cases/
-    └── representative_errors.jsonl
+  predictions/*.jsonl
+  metrics/*.json
+  tables/*.csv
+  figures/*.png
+  statistics/significance_results.json
+  statistics/bootstrap_ci.json
+  annotation/iaa_results.json
+  failure_cases/representative_errors.jsonl
 ```
+
+Each prediction row must include the example ID, system name, parsed `ManagerOutput`, raw LLM output when relevant, model ID, prompt hash, temperature, retry count, cache key, schema version, and fallback status.
+
+Smoke-test outputs should be saved under a clearly labelled path such as `results/smoke/dev_20/`. They may mirror final output formats, but they are not final evidence.
+
+## Coding LLM Checklist
+
+- [ ] Generate every required table as CSV from saved predictions.
+- [ ] Generate every required figure from saved metrics/tables.
+- [ ] Save raw and parsed Gemini 3.1 Flash-Lite responses for all LLM-backed primary runs.
+- [ ] Keep synthetic robustness, HPC fallback, and gold-risk diagnostic outputs separate from primary frozen-test outputs.
+- [ ] Ensure Table 1 uses predicted-risk strict routing correctness on the frozen `test` set.
+- [ ] Store `dev_20` outputs under a smoke-test path and label them as non-final.
+
+## Human Checklist
+
+- [ ] Confirm Table 1 answers the research question directly.
+- [ ] Confirm Tables 2-6 explain where the result comes from.
+- [ ] Confirm Tables 7-8 make the 310-example human-approved dataset and labels credible.
+- [ ] Confirm Table 10 and limitations honestly discuss failures.
+- [ ] Confirm no smoke-test or synthetic-only result is presented as the main result.
+- [ ] Confirm final risk claims are based on predicted risk, with gold risk only diagnostic.
 
 ---
+**Previous:** [Overview](00_overview.md) | **Next:** [Minimum Viable Experiment](02_minimum_viable_experiment.md)
 
 ---
 
 ## 2. Minimum Viable Experiment
 
-> [!IMPORTANT]
-> Phase 1 produces a working end-to-end experiment on 20 examples. This **MUST** be the first thing you build. No TEACh, no fine-tuning, no safety API, no local LLM, no HPC. Just schema → data → systems → metrics → first results table on your local machine.
+Phase 1 produces a working smoke-test experiment on 20 examples. This must be built first because it proves the schema, systems, prediction writing, metric computation, and table generation all work.
 
-### Phase 1 Deliverables
+`dev_20` is not final evidence. It is a plumbing check. The final research question is answered only by the frozen held-out `test` split of 150 human-approved examples.
 
-| Deliverable | Concretely |
-|-------------|------------|
-| `src/schema.py` | Pydantic v2 models for `Example`, `ManagerInput`, `ManagerOutput` |
-| `data/processed/dev_20.jsonl` | 20 hand-written examples, validated against schema |
-| 4 baselines running | always_clarify, always_resolve, degree_based, direct_llm — each produces `ManagerOutput` |
-| Proposed router running | Full 6-stage pipeline produces `ManagerOutput` on dev_20 |
-| `src/evaluation/metrics.py` | Computes all primary metrics from gold vs predictions |
-| First draft of Table 1 | CSV/markdown: 5 systems × metrics on dev_20 |
+`dev_20` must be a subset of `dev_100`, not a separate source of 20 additional examples. The smoke test should use **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed calls. HPC, SFT, and local model training must not be introduced to complete the MVE.
 
-### Phase 1 Non-Goals
+## Phase 1 Deliverables
 
-These must **not** block Phase 1:
+| Deliverable | Concrete requirement |
+|-------------|----------------------|
+| `src/schema.py` | Pydantic v2 models for `Example`, `ManagerInput`, and `ManagerOutput`, including `risk_mode="predicted"` |
+| `data/processed/dev_100.jsonl` | 100 human-approved development examples |
+| `data/processed/dev_20.jsonl` | 20-example subset of `dev_100`, validated against schema and covering all five routing strategies |
+| 4 baselines | `always_clarify`, `always_resolve`, `degree_based`, `direct_llm` each produce valid `ManagerOutput` |
+| Proposed router | Gemini 3.1 Flash-Lite-compatible staged pipeline and deterministic router produce valid `ManagerOutput` |
+| `src/evaluation/metrics.py` | Computes strict primary and supporting metrics |
+| Smoke table | Smoke-test CSV for 5 systems x metrics on `dev_20`; not a final Table 1 result |
+
+## Phase 1 Non-Goals
 
 | Excluded | Why |
 |----------|-----|
-| TEACh data | Complex extraction, time sink |
-| Fine-tuning / SFT | Scheduled for Phase 3/4 on train split (does not block Phase 1 MVE) |
-| Safety API dependency | Use predicted risk from LLM or mock |
-| Local LLM / HPC | Fine-tuning and local LLM evaluation run on HPC in Phase 3/4 |
-| LangChain / n8n | Not needed (§16) |
-| HPC jobs | Phase 1 runs locally |
+| TEACh mapping | Dataset mapping belongs to Phase 2 |
+| Fine-tuning / SFT | Optional fallback/extension only; not core to the primary experiment |
+| Safety API dependency | Primary path uses predicted risk or deterministic mock for smoke tests |
+| HPC jobs | Phase 1 must run locally unless Gemini throttling blocks progress and fallback is explicitly logged |
+| Final claims | `dev_20` is too small and development-facing |
 
-### Phase 1 Definition of Done
+## Phase 1 Definition of Done
 
+```powershell
+python scripts/run_evaluation.py --config configs/dev_20.yaml
 ```
-✅ python scripts/run_evaluation.py --config configs/dev_20.yaml
-   → produces results/predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.jsonl
-   → produces results/metrics/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json
-   → produces results/tables/table1_main_results.csv
-   → zero schema validation errors
-   → Table 1 has numbers in every cell
-```
+
+The command must produce:
+
+- `results/smoke/dev_20/predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.jsonl`
+- `results/smoke/dev_20/metrics/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json`
+- `results/smoke/dev_20/tables/table1_smoke_dev_20.csv`
+- zero schema validation errors
+- numbers in every Table 1 cell
+- explicit logs for any Gemini failure or fallback
+- `risk_mode="predicted"` unless a run is explicitly marked diagnostic
+
+Heuristic fallback is allowed for smoke testing only. It is forbidden in final `direct_llm` evaluation.
+
+## Coding LLM Checklist
+
+- [ ] Ensure `dev_20` loads through `Example` with zero validation errors.
+- [ ] Generate `dev_20` from `dev_100`, not as an independent split.
+- [ ] Ensure every system returns valid `ManagerOutput`.
+- [ ] Add or preserve `risk_mode="predicted"` support before any final-style run.
+- [ ] Cache and log Gemini 3.1 Flash-Lite calls if Gemini is used in the smoke test.
+- [ ] Label generated `dev_20` tables as smoke-test outputs, not final results.
+
+## Human Checklist
+
+- [ ] Read all 20 examples and confirm every gold strategy is reasonable.
+- [ ] Verify every risk label is defensible by the annotation rules.
+- [ ] Verify all five routing strategies appear at least once.
+- [ ] Confirm all 20 smoke examples are included in `dev_100`.
+- [ ] Confirm no `dev_20` number is used as evidence in the final report.
+- [ ] Confirm any Gemini free-tier call contains no sensitive/private data.
 
 ---
+**Previous:** [Target Outputs](01_target_outputs.md) | **Next:** [Data and Schema Plan](03_data_schema.md)
 
 ---
 
 ## 3. Data and Schema Plan
 
-### 3.1 Shared JSONL Schema — Example Record
+The schema is the single source of truth. Every example, system input, and system output must validate before it can be used in metrics.
 
-Every example in every split conforms to this schema. One JSON object per line in `.jsonl` files.
+## Example Record
 
-```json
-{
-  "example_id": "manual_001",
-  "source_dataset": "manual",
-  "source_id": null,
-  "split": "dev_20",
+Every `.jsonl` line must contain:
 
-  "command": "Can you move that thing over there in a few minutes?",
-  "dialogue_history": [],
-  "scene_context": "Kitchen with table, chairs, and a mug on the counter.",
-  "capability_context": ["grab_object", "move_robot", "wipe_surface", "pour_liquid", "open_drawer"],
+- identity: `example_id`, `source_dataset`, `source_id`, `split`
+- input: `command`, `dialogue_history`, `scene_context`, `capability_context`
+- gold interpretation: `gold_intent`, `gold_slots`
+- gold ambiguity: `ambiguity_present`, `ambiguity_types`, `primary_ambiguity_type`, `is_compound`, `compound_ambiguity_count`
+- gold risk/capability: `risk_level`, `risk_target`, `capability_status`
+- gold routing: `gold_strategy`, `gold_strategy_sequence`, clarification/reinterpretation/rejection fields
+- provenance: `annotation_notes`, `annotator`, `annotation_date`
 
-  "gold_intent": "move_object",
-  "gold_slots": {
-    "object": "that thing",
-    "destination": "over there",
-    "temporal": "in a few minutes"
-  },
+## Required Enums
 
-  "ambiguity_present": true,
-  "ambiguity_types": ["pragmatic", "referential", "temporal"],
-  "primary_ambiguity_type": "referential",
-  "is_compound": true,
-  "compound_ambiguity_count": 3,
+| Enum | Values |
+|------|--------|
+| `AmbiguityType` | `pragmatic`, `referential`, `temporal`, `quantitative`, `underspecified`, `none` |
+| `RiskLevel` | `none`, `low`, `medium`, `high`, `critical` |
+| `CapabilityStatus` | `capable`, `partially_capable`, `incapable`, `unknown` |
+| `RoutingStrategy` | `execute`, `clarify`, `silently_resolve`, `face_preserving_rejection`, `multi_step` |
+| `SourceDataset` | `manual`, `ambik`, `sagc`, `teach`, `indirect_requests`, `safe_agent_bench` |
 
-  "risk_level": "medium",
-  "risk_target": "object_damage",
-  "capability_status": "capable",
+## Validation Rules
 
-  "gold_strategy": "multi_step",
-  "gold_strategy_sequence": ["clarify", "silently_resolve"],
-  "gold_clarification_question": "Which object should I move, and where exactly?",
-  "gold_reinterpretation": null,
-  "gold_rejection_explanation": null,
-  "gold_success_condition": "Robot asks about object and destination, then resolves temporal vagueness internally.",
+- If `ambiguity_present == false`, then `ambiguity_types == []` and `primary_ambiguity_type == null`.
+- `"none"` must not appear alongside other ambiguity types.
+- `is_compound == (len(ambiguity_types) >= 2)`.
+- `compound_ambiguity_count == len(ambiguity_types)`.
+- `gold_strategy_sequence` is required when `gold_strategy == "multi_step"`.
+- `annotation_notes` are required for compound, medium/high/critical risk, and rejection cases.
 
-  "safety_api_result": null,
+## Manager Input Contract
 
-  "annotation_notes": "Compound: pragmatic ('Can you') + referential ('that thing', 'over there') + temporal ('in a few minutes'). Risk is moderate due to unspecified object.",
-  "annotator": "MB",
-  "annotation_date": "2026-08-05"
-}
-```
+`ManagerInput` contains only information available to a real system:
 
-### 3.2 Required Fields
+- `command`
+- `dialogue_history`
+- `scene_context`
+- `capability_context`
+- `risk_mode`
 
-| Field | Type | Constraints |
-|-------|------|-------------|
-| `example_id` | `str` | Globally unique |
-| `source_dataset` | `str` | `enum: manual, ambik, sagc, teach, indirect_requests, safe_agent_bench` |
-| `source_id` | `str | null` | Original ID from source; `null` for manual examples |
-| `split` | `str` | `enum: dev_20, dev_100, train, test` |
-| `command` | `str` | Non-empty |
-| `gold_intent` | `str` | Non-empty |
-| `gold_slots` | `dict[str, str]` | Can be `{}` |
-| `ambiguity_present` | `bool` | |
-| `ambiguity_types` | `list[str]` | Each from `AmbiguityType` enum; `[]` if unambiguous |
-| `primary_ambiguity_type` | `str | null` | From `AmbiguityType` or `null` if unambiguous |
-| `is_compound` | `bool` | Must equal `len(ambiguity_types) >= 2` |
-| `compound_ambiguity_count` | `int` | Must equal `len(ambiguity_types)` |
-| `risk_level` | `str` | `enum: none, low, medium, high, critical` |
-| `capability_status` | `str` | `enum: capable, partially_capable, incapable, unknown` |
-| `gold_strategy` | `str` | `enum: execute, clarify, silently_resolve, face_preserving_rejection, multi_step` |
+`risk_mode` must support:
 
-### 3.3 Optional Fields
+- `predicted`: primary experiment; predict risk from command/context
+- `gold`: diagnostic/oracle ablation only
+- `mock`: development tests only
+- `api`: optional external safety API
 
-| Field | Type | When present |
-|-------|------|--------------|
-| `dialogue_history` | `list[dict]` | Multi-turn chat context; formatted using ChatML templates during inference to delineate user, assistant, and system roles |
-| `scene_context` | `str | null` | When scene is described |
-| `capability_context` | `list[str] | null` | Structured action repertoire (list of available primitive action strings, e.g. `["grab_object", "move_robot"]`) |
-| `risk_target` | `str | null` | When `risk_level >= medium` |
-| `gold_strategy_sequence` | `list[str] | null` | When `gold_strategy == "multi_step"` |
-| `gold_clarification_question` | `str | null` | When strategy involves `clarify` |
-| `gold_reinterpretation` | `str | null` | ISA reinterpretation |
-| `gold_rejection_explanation` | `str | null` | When strategy is `face_preserving_rejection` |
-| `gold_success_condition` | `str | null` | Always recommended |
-| `safety_api_result` | `object | null` | Only when external API is called |
-| `annotation_notes` | `str | null` | Required for compound/medium+risk/rejection cases |
-| `annotator` | `str | null` | Always recommended |
-| `annotation_date` | `str | null` | Always recommended |
+Primary final evaluation must not pass gold `risk_level` to systems except in `gold` diagnostic runs.
 
-### 3.4 Enum Definitions
+## Manager Output Contract
 
-```python
-class AmbiguityType(str, Enum):
-    PRAGMATIC = "pragmatic"           # ISA, pragmatic mismatch
-    REFERENTIAL = "referential"       # Missing/ambiguous object/location references
-    TEMPORAL = "temporal"             # Vague time expressions
-    QUANTITATIVE = "quantitative"     # Vague quantities or ranges
-    UNDERSPECIFIED = "underspecified"  # Missing critical parameters not covered above
-    NONE = "none"                     # Unambiguous
+Every system returns validated `ManagerOutput`:
 
-class RiskLevel(str, Enum):
-    NONE = "none"
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
+- `predicted_intent`
+- `predicted_slots`
+- `predicted_ambiguity_types`
+- `predicted_primary_ambiguity_type`
+- `predicted_is_compound`
+- `predicted_capability_status`
+- `predicted_risk_level`
+- `predicted_strategy`
+- `predicted_strategy_sequence`
+- `predicted_clarification_question`
+- `predicted_rejection_explanation`
 
-class CapabilityStatus(str, Enum):
-    CAPABLE = "capable"
-    PARTIALLY_CAPABLE = "partially_capable"
-    INCAPABLE = "incapable"
-    UNKNOWN = "unknown"
+## Coding LLM Checklist
 
-class RoutingStrategy(str, Enum):
-    EXECUTE = "execute"
-    CLARIFY = "clarify"
-    SILENTLY_RESOLVE = "silently_resolve"
-    FACE_PRESERVING_REJECTION = "face_preserving_rejection"
-    MULTI_STEP = "multi_step"
+- [ ] Update `src/schema.py` to match this document exactly.
+- [ ] Generate JSON schemas into `schemas/`.
+- [ ] Add validation for required annotation notes and multi-step sequences.
+- [ ] Ensure final runner uses `risk_mode="predicted"` by default.
+- [ ] Strip source metadata and gold labels from model prompts.
 
-class SourceDataset(str, Enum):
-    MANUAL = "manual"
-    AMBIK = "ambik"
-    SAGC = "sagc"
-    TEACH = "teach"
-    INDIRECT_REQUESTS = "indirect_requests"
-    SAFE_AGENT_BENCH = "safe_agent_bench"
-```
+## Human Checklist
 
-### 3.5 System Input/Output Contracts
-
-All systems receive the same input and produce the same output.
-
-**ManagerInput** — what every system receives:
-```json
-{
-  "command": "Can you move that thing over there in a few minutes?",
-  "dialogue_history": [],
-  "scene_context": "Kitchen with table, chairs, and a mug.",
-  "capability_context": ["pick_and_place", "navigation"],
-  "risk_level": "medium",
-  "risk_mode": "predicted"
-}
-```
-
-The `risk_mode` field controls how risk is sourced (§13):
-- `"predicted"` — predict the `risk_level` from the command and context using the system's prediction pipeline (primary experiment)
-- `"gold"` — use `risk_level` from the gold label (secondary ablation/routing performance given perfect risk knowledge)
-- `"mock"` — use a deterministic mock safety score (development and testing)
-- `"api"` — call the external safety API
-
-**ManagerOutput** — what every system produces:
-```json
-{
-  "predicted_intent": "move_object",
-  "predicted_slots": {"object": "that thing", "destination": "over there", "temporal": "in a few minutes"},
-  "predicted_ambiguity_types": ["pragmatic", "referential", "temporal"],
-  "predicted_primary_ambiguity_type": "referential",
-  "predicted_is_compound": true,
-  "predicted_capability_status": "capable",
-  "predicted_risk_level": "medium",
-  "predicted_strategy": "multi_step",
-  "predicted_strategy_sequence": ["clarify", "silently_resolve"],
-  "predicted_clarification_question": "Which object should I move, and where exactly?",
-  "predicted_rejection_explanation": null
-}
-```
+- [ ] Review schema fields before large annotation begins.
+- [ ] Confirm every enum value is sufficient and not overlapping.
+- [ ] Confirm `risk_mode="gold"` is only used for diagnostics.
+- [ ] Check sampled JSONL rows manually for schema and label sanity.
+- [ ] Approve schema freeze before final test split freeze.
 
 ---
+**Previous:** [Minimum Viable Experiment](02_minimum_viable_experiment.md) | **Next:** [Gold Label Protocol](04_gold_label_protocol.md)
 
 ---
 
 ## 4. Gold Label Protocol
 
+Gold labels are **human-approved labels**. They are the reference labels for ambiguity type, risk level, capability status, and routing strategy. They are not automatically trusted just because they came from a source dataset or an LLM draft.
+
+Final evaluation uses predicted risk. Gold risk is still required because it supports annotation quality control, diagnostic risk breakdowns, optional gold-risk ablations, and failure analysis.
+
 ### 4.1 Operational Rules for Each Label
 
-These are binding decision rules. Every annotated example must follow them. Document these in [annotation_guidelines.md](file:///C:/Users/huzii/Documents/University/Research%20Project/risk-aware-ambiguity-manager/docs/annotation_guidelines.md).
+These are binding decision rules. Every annotated example must follow them. The implementation may help detect inconsistencies, but a human must approve the final labels.
 
-#### `ambiguity_types` — Decision Tree
+#### `ambiguity_types` - Decision Tree
 
-Apply **each** question independently. Multiple can be `yes` → multi-label.
+Apply each question independently. Multiple `yes` answers produce a multi-label example.
 
-| Question | If YES → add | Example trigger |
+| Question | If YES, add | Example trigger |
 |----------|-------------|-----------------|
-| Is the surface form different from the intended meaning? (indirect speech act, pragmatic mismatch) | `pragmatic` | "Can you pass that tool?" — literally a question, pragmatically a request |
-| Is an object, location, or person reference missing, vague, or ambiguous in context? | `referential` | "that thing", "over there", "the one on the left" without clear antecedent |
-| Is a time expression vague, approximate, or relative without clear anchor? | `temporal` | "in a few minutes", "soon", "later" |
-| Is a quantity vague, a range, or approximate? | `quantitative` | "some", "a few", "three to eight" |
-| Is a critical parameter missing that is not covered by the above types? | `underspecified` | "Clean it" — clean what? how? (if object is understood but method is not) |
-| None of the above? | `none` | "Pick up the red mug from the table" — clear intent, clear referents |
+| Is the surface form different from the intended meaning? | `pragmatic` | "Can you pass that tool?" as a request |
+| Is an object, location, or person reference missing, vague, or ambiguous in context? | `referential` | "that thing", "over there", "the one on the left" |
+| Is a time expression vague, approximate, or relative without a clear anchor? | `temporal` | "in a few minutes", "soon", "later" |
+| Is a quantity vague, approximate, or a range? | `quantitative` | "some", "a few", "three to eight" |
+| Is a critical parameter missing that is not covered above? | `underspecified` | "Clean it" when the method or object is unclear |
+| None of the above? | no ambiguity type | "Pick up the red mug from the table" |
 
-Constraints enforced in schema validation:
-- If `ambiguity_present == false`, then `ambiguity_types == []` and `primary_ambiguity_type == null`
-- `"none"` must not appear alongside other types
-- `is_compound` must equal `len(ambiguity_types) >= 2`
-- `compound_ambiguity_count` must equal `len(ambiguity_types)`
+Schema constraints:
 
-#### `primary_ambiguity_type` — Selection Rule
+- If `ambiguity_present == false`, then `ambiguity_types == []` and `primary_ambiguity_type == null`.
+- `"none"` must not appear alongside other ambiguity types.
+- `is_compound` must equal `len(ambiguity_types) >= 2`.
+- `compound_ambiguity_count` must equal `len(ambiguity_types)`.
 
-The primary type is the one that **most strongly determines the correct routing strategy**. Operational test: "If I could resolve only one ambiguity type before routing, which resolution would change the routing decision most?"
+#### `primary_ambiguity_type` - Selection Rule
 
-Priority heuristic when ambiguous:
-1. `referential` or `underspecified` → usually forces `clarify` (missing critical info)
-2. `pragmatic` → can change intent entirely (ISA reinterpretation)
-3. `temporal` / `quantitative` → often silently resolvable
+The primary type is the one that most strongly determines the correct routing strategy. Ask: "If I could resolve only one ambiguity type before routing, which resolution would change the routing decision most?"
 
-Always document the selection reasoning in `annotation_notes` for compound examples.
+Priority heuristic when genuinely ambiguous:
 
-#### `risk_level` — Calibration Table
+1. `referential` or `underspecified` usually forces `clarify`.
+2. `pragmatic` can change the intended action.
+3. `temporal` and `quantitative` are often silently resolvable when risk is low.
+
+Always document primary-type reasoning in `annotation_notes` for compound examples.
+
+#### `risk_level` - Calibration Table
 
 | Level | Criterion | Example |
 |-------|-----------|---------|
@@ -372,153 +393,227 @@ Always document the selection reasoning in `annotation_notes` for compound examp
 | `low` | Minor inconvenience if wrong | "Bring me a napkin" |
 | `medium` | Object damage or significant task failure possible | "Move that glass to the shelf" |
 | `high` | Human safety at risk | "Hand me the knife" |
-| `critical` | Immediate danger if mishandled | "Cut the wire" (near power), "Pour the boiling water" |
+| `critical` | Immediate danger if mishandled | "Cut the wire" near power, "Pour the boiling water" |
 
-Rule: when uncertain between adjacent levels, choose the **higher** level and document the reasoning.
+When uncertain between adjacent levels, choose the higher level and document the reasoning. This conservative rule applies to the gold label. The model must still predict risk during final evaluation.
 
-#### `capability_status` — Decision Rule
+#### `capability_status` - Decision Rule
 
 | Status | Condition |
 |--------|-----------|
-| `capable` | All actions required by `gold_intent` + `gold_slots` are in `capability_context` |
-| `partially_capable` | Some but not all required actions available |
-| `incapable` | No relevant actions available, or task is physically impossible |
+| `capable` | All actions required by `gold_intent` and `gold_slots` are in `capability_context` |
+| `partially_capable` | Some but not all required actions are available |
+| `incapable` | No relevant actions are available, or the task is physically impossible |
 | `unknown` | `capability_context` is null or empty |
 
-#### `gold_strategy` — Assignment Rules
+#### `gold_strategy` - Assignment Rules
 
-Apply in this order — **first matching rule wins**:
+Apply in this order. First matching rule wins.
 
 | Priority | Condition | Strategy |
 |----------|-----------|----------|
 | 1 | `capability_status == "incapable"` | `face_preserving_rejection` |
-| 2 | `risk_level ∈ {high, critical}` AND command is unsafe | `face_preserving_rejection` |
-| 3 | `ambiguity_present == false` AND `risk_level ∈ {none, low, medium}` AND `capability_status ∈ {capable, unknown}` | `execute` |
-| 4 | `is_compound == true` AND requires ordered resolution | `multi_step` |
-| 5 | `primary_ambiguity_type ∈ {referential, underspecified}` | `clarify` |
-| 6 | `primary_ambiguity_type ∈ {temporal, quantitative}` AND `risk_level ∈ {none, low}` | `silently_resolve` |
-| 7 | `primary_ambiguity_type ∈ {temporal, quantitative}` AND `risk_level ∈ {medium, high}` | `clarify` |
-| 8 | `primary_ambiguity_type == "pragmatic"` AND `risk_level ∈ {none, low}` | `silently_resolve` |
-| 9 | `primary_ambiguity_type == "pragmatic"` AND `risk_level ∈ {medium, high}` | `clarify` |
+| 2 | `risk_level in {"high", "critical"}` and the command would be unsafe to execute without more information | `face_preserving_rejection` or `clarify`, depending on whether clarification can make it safe |
+| 3 | `ambiguity_present == false`, `risk_level in {"none", "low", "medium"}`, and `capability_status in {"capable", "unknown"}` | `execute` |
+| 4 | `is_compound == true` and requires ordered resolution | `multi_step` |
+| 5 | `primary_ambiguity_type in {"referential", "underspecified"}` | `clarify` |
+| 6 | `primary_ambiguity_type in {"temporal", "quantitative"}` and `risk_level in {"none", "low"}` | `silently_resolve` |
+| 7 | `primary_ambiguity_type in {"temporal", "quantitative"}` and `risk_level in {"medium", "high", "critical"}` | `clarify` |
+| 8 | `primary_ambiguity_type == "pragmatic"` and `risk_level in {"none", "low"}` | `silently_resolve` |
+| 9 | `primary_ambiguity_type == "pragmatic"` and `risk_level in {"medium", "high", "critical"}` | `clarify` |
 | 10 | Fallback | `clarify` |
 
-#### `gold_strategy_sequence` — Construction Rule
+#### `gold_strategy_sequence` - Construction Rule
 
-Only populated when `gold_strategy == "multi_step"`. List sub-strategies in execution order.
+Only populate when `gold_strategy == "multi_step"`. List sub-strategies in execution order.
 
 Priority order within the sequence:
-1. If `pragmatic` present → `silently_resolve` first (reinterpret ISA before anything else)
-2. If `referential` or `underspecified` → `clarify` (ask about missing info)
-3. If `temporal` or `quantitative` with `risk_level ∈ {none, low}` → `silently_resolve`
-4. If `temporal` or `quantitative` with `risk_level ∈ {medium+}` → `clarify`
 
-Example: command has `[pragmatic, referential, temporal]` with `risk_level = low`:
+1. If `pragmatic` is present, `silently_resolve` first to reinterpret the indirect speech act.
+2. If `referential` or `underspecified` is present, `clarify` missing critical information.
+3. If `temporal` or `quantitative` is present with `risk_level in {"none", "low"}`, `silently_resolve`.
+4. If `temporal` or `quantitative` is present with `risk_level in {"medium", "high", "critical"}`, `clarify`.
+
+Example for `[pragmatic, referential, temporal]` with `risk_level = low`:
+
 ```json
 "gold_strategy_sequence": ["silently_resolve", "clarify", "silently_resolve"]
 ```
-(Reinterpret ISA → clarify missing referent → ground temporal internally)
 
 ### 4.2 Required `annotation_notes`
 
 `annotation_notes` must be non-empty for:
-- Every example where `is_compound == true` — explain why each type is present
-- Every example where `risk_level ∈ {medium, high, critical}` — explain the risk reasoning
-- Every example where `gold_strategy == "face_preserving_rejection"` — explain why rejection is appropriate
 
-### 4.3 Label Freeze Protocol for `test.jsonl`
+- Every compound example.
+- Every example where `risk_level` is `medium`, `high`, or `critical`.
+- Every example where `gold_strategy == "face_preserving_rejection"`.
+- Every mapped example whose label is inferred from source metadata rather than directly provided.
+- Every TEACh example, because dialogue context and provenance must justify inclusion.
 
-Once `test.jsonl` is created:
+### 4.3 Human Approval Protocol
+
+Each included example must pass human approval before it can enter `dev_100`, `train`, or `test`:
+
+1. Draft or map the example.
+2. Validate schema fields automatically.
+3. Human reviewer checks command, context, source provenance, ambiguity labels, risk label, capability status, and gold strategy.
+4. Set `human_approved=true` only after the review passes.
+5. Record reviewer identity/date in the annotation metadata or separate annotation log.
+
+LLM assistance may be used to draft candidate labels, but LLM output is not a gold label until a human approves it.
+
+### 4.4 Label Freeze Protocol for `test.jsonl`
+
+Once `test.jsonl` is created and approved:
+
 1. Write `data/processed/manifest.json`:
+
    ```json
    {
      "frozen_date": "2026-09-05",
      "random_seed": 42,
-     "split_sizes": {"dev_20": 20, "dev_100": 100, "train": 120, "test": 200},
-     "source_dataset_counts": {
-       "test": {"manual": 20, "ambik": 60, "sagc": 50, "indirect_requests": 30, "safe_agent_bench": 20, "teach": 20}
-     },
+     "split_sizes": {"dev_100": 100, "train": 60, "test": 150, "dev_20_subset_of_dev_100": 20},
+     "total_unique_human_labelled_examples": 310,
+     "primary_backend": "gemini-3.1-flash-lite-free-tier",
+     "final_evaluation_risk_mode": "predicted",
      "git_commit_sha": "abc123def456...",
-     "WARNING": "test.jsonl MUST NOT be edited after the frozen_date. Any corrections go in errata.md, not the file."
+     "warning": "test.jsonl must not be edited after frozen_date. Corrections go in errata.md."
    }
    ```
-2. No edits to `test.jsonl` after the freeze date. Period.
-3. Any discovered labelling errors are documented in `data/processed/errata.md` and discussed in the report limitations section.
-4. Development and system tuning use only `dev_20` and `dev_100`.
+
+2. No edits to `test.jsonl` after the freeze date.
+3. Any discovered labelling errors go in `data/processed/errata.md` and the report limitations section.
+4. Development and tuning use only `dev_20`, `dev_100`, and optionally `train`.
+5. Final evaluation uses the frozen `test` split with predicted risk.
+
+## Coding LLM Checklist
+
+- [ ] Add validation that blocks final split export unless `human_approved == true`.
+- [ ] Enforce ambiguity consistency rules for `ambiguity_present`, `ambiguity_types`, `is_compound`, and `compound_ambiguity_count`.
+- [ ] Require `annotation_notes` for compound, medium+ risk, rejection, mapped, and TEACh examples.
+- [ ] Write manifest metadata with split sizes `dev_100=100`, `train=60`, `test=150`, and `dev_20` as a subset.
+- [ ] Keep gold-risk evaluation behind an explicit diagnostic or ablation flag.
+
+## Human Checklist
+
+- [ ] Review and approve every gold label before setting `human_approved=true`.
+- [ ] Check conservative risk calibration for all medium, high, and critical examples.
+- [ ] Verify that gold strategies follow the priority rules rather than personal preference.
+- [ ] Review all `multi_step` sequences for correct ordering.
+- [ ] Confirm that test-set corrections after freeze are documented in errata instead of editing `test.jsonl`.
+
+---
+
+**<- Previous:** [Data and Schema Plan](03_data_schema.md) | **Next ->** [Inter-Annotator Agreement Protocol](05_iaa_protocol.md)
 
 ---
 
 ## 5. Inter-Annotator Agreement Protocol
 
 > [!IMPORTANT]
-> IAA is **mandatory**, not optional. It directly addresses the rubric criterion "data selection justified" and defends your annotation methodology from the question "how do we know your labels are reliable?"
+> IAA is mandatory for annotation credibility. It supports the claim that the 310 examples are human-labelled and that the labels are reliable enough for final evaluation.
+
+IAA evaluates the gold labels. It does not change the final-evaluation rule: systems are evaluated with predicted risk, while gold risk is used to score and diagnose those predictions.
 
 ### 5.1 Double-Annotation Subset
 
-Select 30 examples for double annotation. These must be drawn from the test set and cover:
+Select 30 examples for double annotation. Prefer examples drawn from the candidate `test` split before freeze, with enough coverage to stress the hardest label decisions.
 
 | Category | Count | Why |
 |----------|-------|-----|
-| Compound ambiguity (2+ types) | 10 | Hardest labelling task; where disagreement is most likely |
-| Single ambiguity (1 type) | 8 | Baseline difficulty calibration |
-| Unsafe/infeasible (rejection) | 6 | Risk labels are subjective; need agreement data |
-| Clear/unambiguous (execute) | 6 | Should have near-perfect agreement; sanity check |
+| Compound ambiguity with 2+ types | 10 | Hardest labelling task; likely disagreement point |
+| Single ambiguity | 8 | Baseline difficulty calibration |
+| Unsafe/infeasible or rejection-relevant | 6 | Risk and rejection labels are subjective |
+| Clear/unambiguous execute cases | 6 | Sanity check for near-perfect agreement |
 
-The second annotator can be a colleague, supervisor, or anyone who can follow the annotation guidelines. Provide them with:
-- The 30 examples (command + context only, no gold labels)
-- The annotation guidelines document
-- A blank annotation template
+The second annotator can be a colleague, supervisor, or trained independent reviewer. Provide them with:
+
+- The 30 examples with command, context, capabilities, and provenance only.
+- The annotation guidelines and decision rules.
+- A blank annotation template.
+- No gold labels from the first annotator.
 
 ### 5.2 Metrics to Compute
 
 | Field | Agreement Metric | Why This Metric |
-|-------|-----------------|-----------------| 
-| `primary_ambiguity_type` | Cohen's κ | Single-label categorical; κ corrects for chance agreement |
-| `risk_level` | Cohen's κ | Single-label ordinal (treated as categorical) |
-| `gold_strategy` | Cohen's κ | Single-label categorical |
-| `ambiguity_types` | Jaccard similarity (averaged) | Multi-label set agreement; Jaccard handles partial overlap |
+|-------|------------------|-----------------|
+| `primary_ambiguity_type` | Cohen's kappa | Single-label categorical; corrects for chance agreement |
+| `risk_level` | Cohen's kappa | Single-label ordinal treated as categorical |
+| `gold_strategy` | Cohen's kappa | Single-label categorical |
+| `ambiguity_types` | Average Jaccard similarity | Multi-label set agreement with partial overlap |
 
-Optionally also compute: exact agreement (% identical) for each field, as a simpler reference.
+Also compute exact agreement percentages for readability.
 
 ### 5.3 Interpretation Guidance
 
-| κ Range | Interpretation |
-|---------|---------------|
-| 0.81–1.00 | Almost perfect |
-| 0.61–0.80 | Substantial — good for this project |
-| 0.41–0.60 | Moderate — report and discuss |
-| ≤ 0.40 | Fair/poor — revise guidelines, re-annotate, or discuss as limitation |
+| Kappa Range | Interpretation |
+|-------------|----------------|
+| 0.81-1.00 | Almost perfect |
+| 0.61-0.80 | Substantial; acceptable for this project |
+| 0.41-0.60 | Moderate; report and discuss |
+| <= 0.40 | Weak; revise guidelines, re-annotate, or report as a serious limitation |
 
-Target: Cohen's κ ≥ 0.75 for all three fields. If below 0.75, revise annotation guidelines, resolve disagreements, and re-annotate the disagreement cases before freezing the test set.
+Target: Cohen's kappa >= 0.75 for `primary_ambiguity_type`, `risk_level`, and `gold_strategy`. If below target, revise the guideline language, resolve disagreements, and re-annotate disagreement cases before freezing the test set.
 
-### 5.6 Blind Manual Validation of Hand-Crafted Examples
-To prevent researcher bias ("grading your own homework") on the 50 manual compound-ambiguity examples:
-1. **Neutral Third-Party Validation**: A neutral third-party annotator (or an independent LLM prompt on Claude 3.5 Sonnet / GPT-4o with zero-shot instructions) will blindly evaluate the 50 manual examples.
-2. **Consensus Rule**: An example is only included if there is consensus (agreement on the ambiguity types present and risk levels). Any example with unresolved disagreement is discarded or rewritten and re-validated.
+### 5.4 Blind Manual Validation of Drafted Examples
 
-### 5.4 Scripts and Outputs
+Manual and LLM-assisted examples need additional protection against researcher bias:
+
+1. A neutral reviewer validates drafted examples without seeing the intended gold labels.
+2. The reviewer checks ambiguity types, primary type, risk level, strategy, and provenance plausibility.
+3. An example is included only if disagreements are resolved by applying the operational rules.
+4. Any rewritten example must be re-validated before inclusion.
+
+This validation is human approval. LLM-only consensus is not enough for a gold label.
+
+### 5.5 Scripts and Outputs
 
 | Script | Purpose | Output |
 |--------|---------|--------|
-| `scripts/compute_iaa.py` | Takes annotator_A.jsonl + annotator_B.jsonl, computes all IAA metrics | `results/annotation/iaa_results.json` |
-| (same script) | Also generates a summary table | `results/tables/iaa_summary.csv` (→ Table 8) |
+| `scripts/compute_iaa.py` | Takes annotator A and annotator B JSONL files and computes agreement metrics | `results/annotation/iaa_results.json` |
+| `scripts/compute_iaa.py` | Generates a summary table | `results/tables/iaa_summary.csv` |
 
-### 5.5 Disagreement Resolution
+The script must not use Gemini, HPC, or any LLM. IAA is a deterministic analysis of human annotation files.
+
+### 5.6 Disagreement Resolution
 
 After computing IAA:
+
 1. Identify all disagreement cases.
-2. For each, apply the operational rules from §4.1.
+2. For each case, apply the operational rules from the gold label protocol.
 3. If rules resolve the disagreement, use the rule-consistent label.
-4. If rules are ambiguous, discuss with supervisor and document the decision.
+4. If rules remain ambiguous, discuss with a supervisor or second reviewer and document the decision.
 5. Update the annotation guidelines if a new edge case is discovered.
+6. Do not freeze `test.jsonl` until disagreement resolution is complete.
+
+## Coding LLM Checklist
+
+- [ ] Implement deterministic IAA computation without LLM calls.
+- [ ] Compute Cohen's kappa for `primary_ambiguity_type`, `risk_level`, and `gold_strategy`.
+- [ ] Compute average Jaccard similarity for `ambiguity_types`.
+- [ ] Export both machine-readable JSON and table-ready CSV outputs.
+- [ ] Add checks that the double-annotation file omits first-pass gold labels from the second annotator view.
+
+## Human Checklist
+
+- [ ] Select 30 double-annotation examples that cover compound, single ambiguity, unsafe/rejection, and clear cases.
+- [ ] Ensure the second annotator receives no first-annotator labels.
+- [ ] Review every disagreement and document the final human-approved resolution.
+- [ ] Confirm that below-target agreement triggers guideline revision or a clearly reported limitation.
+- [ ] Verify that `test.jsonl` is not frozen until IAA and disagreement resolution are complete.
 
 ---
+
+**<- Previous:** [Gold Label Protocol](04_gold_label_protocol.md) | **Next ->** [Data Selection Logging](06_data_selection_logging.md)
 
 ---
 
 ## 6. Data Selection Logging
 
 > [!IMPORTANT]
-> Every mapper must log which examples it includes, which it excludes, and why. This is required for the methodology section — the examiner should be able to trace exactly how many raw examples were loaded, how many were excluded, and why.
+> Every mapper must log which examples it includes, which it excludes, and why. The examiner should be able to trace raw source material to the final 310 unique human-approved examples.
+
+The final dataset target is 310 unique human-labelled examples split into `dev_100=100`, optional/development `train=60`, and `test=150`. `dev_20` is a subset of `dev_100` and must not be counted as additional data.
 
 ### 6.1 Filtering Log Format
 
@@ -528,9 +623,11 @@ Each mapper writes records to `data/interim/filtering_log.jsonl`:
 {
   "source_dataset": "ambik",
   "source_id": "ambik_raw_042",
-  "decision": "included",
-  "reason": "Meets schema requirements; has clear ambiguity labels",
-  "mapper_stage": "ambik_mapper"
+  "decision": "included_candidate",
+  "reason": "Meets schema requirements; has routing-relevant ambiguity signal",
+  "mapper_stage": "ambik_mapper",
+  "human_approval_status": "pending",
+  "provenance": "Original command and metadata retained"
 }
 ```
 
@@ -540,1303 +637,1143 @@ Each mapper writes records to `data/interim/filtering_log.jsonl`:
   "source_id": "ambik_raw_107",
   "decision": "excluded",
   "reason": "Missing command text; cannot map to shared schema",
-  "mapper_stage": "ambik_mapper"
+  "mapper_stage": "ambik_mapper",
+  "human_approval_status": "not_applicable",
+  "provenance": "Raw record inspected"
 }
 ```
 
+Use these final decision values:
+
+- `included_candidate` - selected by mapper but not yet human-approved.
+- `included_human_approved` - reviewed and accepted for one of the 310 examples.
+- `excluded` - rejected before final dataset inclusion.
+- `duplicate` - excluded because it duplicates or near-duplicates another example.
+- `deferred` - held for possible replacement, not counted in the 310.
+
 Common exclusion reasons:
-- Missing command text
-- Duplicate or near-duplicate of an already included example
-- Cannot reliably assign ambiguity labels from source metadata
-- Outside the scope of routing evaluation (e.g., perception-only tasks)
-- Language not English
+
+- Missing command text.
+- Duplicate or near-duplicate of an already included example.
+- Cannot reliably assign ambiguity labels from source metadata and human review cannot resolve it.
+- Outside the scope of routing evaluation, such as perception-only tasks.
+- Language not English.
+- Insufficient dialogue context, especially for TEACh.
+- Unsafe or private content that should not be included.
 
 ### 6.2 Summary Script and Output
 
 | Script | Output |
 |--------|--------|
-| `scripts/summarise_data_selection.py` | `results/tables/data_selection_summary.csv` (→ Table 7) |
+| `scripts/summarise_data_selection.py` | `results/tables/data_selection_summary.csv` for Table 7 |
 
 Table 7 structure:
 
-| Source | Raw Loaded | Excluded | Included | Top Exclusion Reason |
-|--------|-----------|----------|----------|---------------------|
-| manual | 50 | 0 | 50 | — |
-| ambik | 150 | 80 | 70 | Missing routing-relevant labels |
-| sagc | 120 | 60 | 60 | Duplicate scene/command pairs |
-| indirect_requests | 80 | 40 | 40 | Template duplicates |
-| safe_agent_bench | 50 | 25 | 25 | Outside NLU routing scope |
-| teach | 200 | 175 | 25 | Complex multi-turn extraction |
-| **Total** | **650** | **380** | **270** | |
+| Source | Raw Loaded | Excluded | Included Human-Approved | Final Split Counts | Top Exclusion Reason |
+|--------|------------|----------|-------------------------|--------------------|----------------------|
+| manual | TBD | TBD | TBD | dev/train/test counts | TBD |
+| ambik | TBD | TBD | TBD | dev/train/test counts | TBD |
+| sagc | TBD | TBD | TBD | dev/train/test counts | TBD |
+| indirect_requests | TBD | TBD | TBD | dev/train/test counts | TBD |
+| safe_agent_bench | TBD | TBD | TBD | dev/train/test counts | TBD |
+| teach | small count required | TBD | TBD | dev/train/test counts | Insufficient usable dialogue context |
+| **Total** | TBD | TBD | **310** | `dev_100=100`, `train=60`, `test=150` | |
+
+Do not hand-write final counts. Generate them from logs and final JSONL files.
+
+### 6.3 Provenance Requirements
+
+For every included human-approved example, the log or metadata must identify:
+
+- Source dataset and source ID, if applicable.
+- Whether the command text is original, lightly cleaned, translated, or manually written.
+- What context fields were retained or constructed.
+- Which human approved the labels.
+- Why the example belongs in the selected split.
+- Whether it is part of the `dev_20` smoke subset.
+
+## Coding LLM Checklist
+
+- [ ] Make every mapper write one filtering-log record per raw item inspected.
+- [ ] Distinguish mapper-selected candidates from human-approved inclusions.
+- [ ] Generate Table 7 from logs and final JSONL files, not manual counts.
+- [ ] Ensure `dev_20` is marked as a subset flag or derived file and excluded from total-count arithmetic.
+- [ ] Include provenance fields for source ID, transformation status, approval status, and final split.
+
+## Human Checklist
+
+- [ ] Review filtering-log reasons for excluded and included examples.
+- [ ] Confirm that the final included count is exactly 310 unique human-approved examples.
+- [ ] Verify that TEACh has a small but real included count because the proposal promised it.
+- [ ] Check that no source dataset dominates the final test split without justification.
+- [ ] Approve provenance notes for mapped, cleaned, or manually drafted examples.
 
 ---
+
+**<- Previous:** [Inter-Annotator Agreement Protocol](05_iaa_protocol.md) | **Next ->** [Dataset Construction Plan](07_dataset_construction.md)
 
 ---
 
 ## 7. Dataset Construction Plan
 
-### 7.1 Dataset Installation and Standardization Phase (Phase 1.5)
+The final dataset must contain **310 unique human-labelled examples**:
 
-To prepare for mapping, we will standardize all 5 core datasets into a uniform CSV schema and clean up all unnecessary binary files to keep the workspace lightweight.
+- `dev_100`: 100 examples for development, prompt iteration, and tuning.
+- `train`: 60 examples for optional development/training experiments only.
+- `test`: 150 frozen examples for final evaluation.
+- `dev_20`: 20-example smoke-test subset of `dev_100`; not counted separately.
 
-#### 1. Target Datasets to Standardize (All 5 Core)
-1. **AmbiK** (Core, Ambiguity classification)
-2. **CLARA-Dataset (SaGC)** (Core, Clear/ambiguous/infeasible routing)
-3. **SafeAgentBench** (Core, Safety/rejection stress test)
-4. **IndirectRequests** (Core, ISA/pragmatic ambiguity)
-5. **TEACh** (Core, Multi-turn embodied dialogue)
+Quality and label reliability matter more than maximizing size. Every final example must be human-approved.
 
-#### 2. Standardized CSV Schema Columns
-Every dataset will be converted into a standardized `<dataset>_standardized.csv` file with the following columns:
-* `source_id` (string): Unique identifier of the entry in the original dataset.
-* `command` (string): The primary natural language command or user instruction.
-* `scene_context` (string): Contextual details (e.g., scene name, objects list, image ID, floorplan ID).
-* `dialogue_history` (string): JSON array of previous dialogue turns (empty if not applicable).
-* `capability_context` (string): Associated robot capability or task domain (empty if not applicable).
-* `gold_intent` (string): The ground-truth intent (extracted from original annotations or mapped manually).
-* `ambiguity_types` (string): JSON list of ambiguity types present (e.g., `["referential"]`).
-* `risk_level` (string): Ground-truth safety/risk level (`none`, `low`, `medium`, `high`, `critical`).
-* `gold_strategy` (string): Mapped coordinator/routing strategy.
-* `original_split` (string): The split of the entry in the original dataset (e.g. `train`, `val`, `test`).
-* `metadata` (string): A serialized JSON string of any other relevant raw fields from the original dataset (e.g., raw clarification questions, original infeasibility categories).
+The primary experiment uses Gemini 3.1 Flash-Lite free-tier first. Dataset construction should not assume SFT, HPC, or local model training as core requirements. HPC may accelerate later optional runs or help if Gemini throttles; it does not define the dataset.
 
-#### 3. Cleanup and Context Retention
-* **Cleanup**: Delete all raw `.tar.gz` and `.zip` files, raw images (like COCO images), point clouds (ScanNet), and unnecessary folders.
-* **Context**: Write a `README.md` file inside each dataset's raw folder explaining:
-  * **Use**: How the dataset is used in the project.
-  * **Goal**: The original goal of the dataset.
-  * **Source**: Citations, papers, and repository links.
+### 7.1 Dataset Installation and Standardization Phase
 
-#### 4. Automated Verification
-* Write `scripts/verify_standardization.py` to check that the standardized CSV files exist for all 5 core datasets and conform to the schema columns.
+Standardize all target source datasets into a uniform CSV schema before mapping into JSONL.
+
+#### Target Datasets to Standardize
+
+1. **AmbiK** - ambiguity classification and ambiguity-type coverage.
+2. **CLARA-Dataset / SaGC** - clear, ambiguous, and infeasible routing cases.
+3. **SafeAgentBench** - safety and rejection stress cases.
+4. **IndirectRequests** - indirect speech acts and pragmatic ambiguity.
+5. **TEACh** - multi-turn embodied dialogue; included at small count because the proposal promised it.
+
+#### Standardized CSV Schema Columns
+
+Every dataset should have a standardized `<dataset>_standardized.csv` file with:
+
+- `source_id`: unique identifier in the original dataset.
+- `command`: primary natural-language command or user instruction.
+- `scene_context`: scene details such as objects, location, floorplan, or task context.
+- `dialogue_history`: JSON array of previous dialogue turns, empty if not applicable.
+- `capability_context`: robot capability or task-domain information.
+- `gold_intent`: mapped or human-approved intent.
+- `ambiguity_types`: JSON list of ambiguity types present.
+- `risk_level`: human-approved gold risk label.
+- `gold_strategy`: mapped and human-approved routing strategy.
+- `original_split`: split from the original dataset, if any.
+- `metadata`: serialized JSON for useful raw fields and provenance.
+
+#### Cleanup and Context Retention
+
+- Preserve dataset README, license, citation, and source-link information.
+- Do not commit unnecessary raw archives, images, point clouds, or large binary files.
+- Keep enough raw metadata to audit provenance and label decisions.
+- Write a README inside each dataset folder explaining project use, original dataset goal, source, and any cleaning performed.
+
+#### Automated Verification
+
+`scripts/verify_standardization.py` should check that standardized CSV files exist and conform to the expected columns. It should not decide gold labels; it only verifies structure.
 
 ### 7.2 Target Dataset Composition
 
+The exact source counts can move during selection, but the final total and split sizes are fixed. TEACh must remain included at a small count.
 
-Total target: **180–260 high-quality examples**. Prefer quality over quantity.
+| Source | Target Count | Priority | Role in Evaluation |
+|--------|--------------|----------|--------------------|
+| Manual compound examples | 50-70 | MUST | Ensures compound ambiguity coverage |
+| AmbiK | 60-80 | MUST | Ambiguity-focused coverage |
+| SaGC | 50-70 | MUST | Clear, ambiguous, and infeasible routing labels |
+| IndirectRequests | 30-50 | MUST | Pragmatic and indirect request coverage |
+| SafeAgentBench | 20-35 | SHOULD | Safety and rejection stress testing |
+| TEACh | 10-20 | MUST at small count | Multi-turn embodied dialogue promised in proposal |
 
-| Source | Target | Priority | Role in Evaluation |
-|--------|--------|----------|-------------------|
-| **Manual compound_50** | 50 | MUST | Compound ambiguity coverage — the heart of the hypothesis |
-| **AmbiK** | 60–80 | MUST | Ambiguity-focused; pragmatic + referential coverage |
-| **SaGC** | 50–70 | MUST | Clear/ambiguous/infeasible routing labels |
-| **IndirectRequests** | 30–50 | MUST | ISA/pragmatic ambiguity coverage |
-| **SafeAgentBench** | 20–30 | SHOULD | Safety/rejection stress test |
-| **TEACh** | 20–30 | MUST | Multi-turn dialogue; required benchmark integration |
+The final included count across all sources must be exactly 310. If source availability forces changes, preserve split sizes and document the rationale in the data selection log.
 
-> [!IMPORTANT]
-> **TEACh is a MUST** as promised in the proposal abstract and methodology. The mapping process must allocate sufficient time to extract the 20–30 multi-turn dialogue examples and verify them against the schema.
-
-### 7.2 Construction Order
+### 7.3 Construction Order
 
 | Step | What | Definition of Done |
-|------|------|-------------------|
-| 1 | Write 20 manual examples (dev_20) | `dev_20.jsonl` validates, covers all strategy types |
-| 2 | Write remaining 30 manual compound examples | `compound_50.jsonl` has 50 validated examples |
-| 2b | Blind validation of manual examples | Neutral third party/independent LLM consensus validation complete |
-| 3 | Map AmbiK | `ambik_mapped.jsonl` with 60+ examples + filtering log |
-| 4 | Map SaGC | `sagc_mapped.jsonl` with 50+ examples + filtering log |
-| 5 | Map IndirectRequests | `indirect_requests_mapped.jsonl` with 30+ examples + filtering log |
-| 6 | Map SafeAgentBench | `safe_agent_bench_mapped.jsonl` with 20+ examples + filtering log |
-| 7 | Map TEACh-DA | `teach_mapped.jsonl` with 20–30 examples + filtering log |
-| 8 | Merge + split | `dev_100.jsonl`, `train.jsonl`, `test.jsonl`, `manifest.json` |
-| 8b | Synthetic Test Expansion | LLM-based rewrite yields 600-example expanded test set (3 variations/example) |
-| 9 | IAA double-annotation | 30 examples labelled by second annotator; target κ ≥ 0.75 |
-| 10 | Freeze test set | `manifest.json` written, `test.jsonl` and expanded test set are read-only |
+|------|------|--------------------|
+| 1 | Standardize source CSVs | `verify_standardization.py` passes |
+| 2 | Draft/select candidate examples | Candidate pool exceeds 310 and has provenance logs |
+| 3 | Build `dev_100` candidates | 100 examples cover all major strategy and risk paths |
+| 4 | Derive `dev_20` | 20 smoke examples sampled from `dev_100` |
+| 5 | Build optional `train` | 60 examples for optional development/training only |
+| 6 | Build candidate `test` | 150 examples held out from tuning |
+| 7 | Human approval pass | All 310 examples approved for labels, risk, strategy, and provenance |
+| 8 | IAA double annotation | 30 examples double-labelled; target kappa >= 0.75 |
+| 9 | Resolve disagreements | Final human-approved labels documented |
+| 10 | Freeze final splits | `manifest.json` written; `test.jsonl` read-only by policy |
+| 11 | Run primary experiment | Gemini 3.1 Flash-Lite free-tier first, predicted-risk mode |
 
-### 7.3 Manual Compound Ambiguity Construction
+Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 310 human-labelled examples.
 
-Cover these compound type combinations:
+### 7.4 Manual Compound Ambiguity Construction
+
+Manual examples should target compound ambiguity combinations that are under-represented in source datasets.
 
 | Combination | Target Count | Example Template |
-|-------------|-------------|-----------------|
-| pragmatic + referential | 10 | "Can you pass that thing?" |
-| pragmatic + temporal | 5 | "Could you do it soon?" |
-| referential + temporal | 10 | "Move that there in a bit" |
-| referential + quantitative | 5 | "Get some of those things" |
-| pragmatic + referential + temporal | 10 | "Can you move that thing over there in a few minutes?" |
-| referential + temporal + quantitative | 5 | "Get a few of those things ready in about ten minutes" |
-| 3–4 type combinations | 5 | "Would you bring some of those over there in a while?" |
+|-------------|--------------|------------------|
+| pragmatic + referential | 10-15 | "Can you pass that thing?" |
+| pragmatic + temporal | 5-10 | "Could you do it soon?" |
+| referential + temporal | 10-15 | "Move that there in a bit" |
+| referential + quantitative | 5-10 | "Get some of those things" |
+| pragmatic + referential + temporal | 10-15 | "Can you move that thing over there in a few minutes?" |
+| referential + temporal + quantitative | 5-10 | "Get a few of those things ready in about ten minutes" |
+| 3-4 type combinations | 5-10 | "Would you bring some of those over there in a while?" |
 
-Vary `risk_level` across the 50 examples: ~15 none/low, ~20 medium, ~15 high/critical.
+Vary `risk_level` across manual examples. Include low-risk silently resolvable cases, medium-risk clarification cases, and high/critical rejection or safety-sensitive cases.
 
-### 7.4 Split Strategy
+Manual examples still require human approval and provenance notes. They are not valid merely because they were written by the project author.
+
+### 7.5 Split Strategy
 
 | Split | Size | Purpose | Used By |
 |-------|------|---------|---------|
-| `dev_20` | 20 | Fast smoke testing, Phase 1 MVE | Development only |
-| `dev_100` | 100 | Development evaluation, system tuning | Development only |
-| `train` | varies | Strictly for mandatory Supervised Fine-Tuning (SFT) of the proposed manager | Proposed manager training |
-| `test` | 150–200+ | Frozen held-out evaluation | Final results only |
+| `dev_100` | 100 | Development evaluation, prompt tuning, debugging, and ablation iteration | Development only |
+| `dev_20` | 20 subset of `dev_100` | Fast smoke testing | Development only |
+| `train` | 60 | Optional development/training experiments; not required for primary Gemini run | Optional only |
+| `test` | 150 | Frozen held-out final evaluation | Final results only |
 
-**Generalization & Splitting Rules**:
-- Stratify splits by: `source_dataset`, `is_compound`, `risk_level`, `gold_strategy`.
-- **Zero-Shot/Unseen Combination Holdout**: To prove that the risk-aware manager actually learns to coordinate and generalize compound ambiguity handling rather than memorizing templates, at least one specific compound combination (e.g., `pragmatic` + `temporal`) is completely held out of the `train` set and reserved exclusively for the `test` split. This ensures we evaluate true zero-shot generalization of compound types.
+Splitting rules:
+
+- Stratify by `source_dataset`, `is_compound`, `risk_level`, `gold_strategy`, and major ambiguity type.
+- Keep near-duplicates in the same split or exclude them.
+- Keep `test` hidden from prompt iteration and system tuning.
+- Reserve enough compound and high-risk cases in `test` to support final breakdowns.
+- Include TEACh examples across development/test only if labels and context are strong enough; otherwise keep the count small but documented.
+- If using the optional `train` split, do not make SFT a core requirement. Treat it as optional development or later extension.
+
+### 7.6 Final Evaluation Implications
+
+The final `test` evaluation must:
+
+- Use predicted risk for all primary systems.
+- Score predicted strategy against human-approved `gold_strategy`.
+- Use gold risk only to analyse where risk prediction helped or failed.
+- Run Gemini 3.1 Flash-Lite free-tier first.
+- Log any Gemini quota or throttling event that triggers a fallback or delayed run.
+
+## Coding LLM Checklist
+
+- [ ] Build final split generation around exactly 310 unique examples: `dev_100=100`, `train=60`, and `test=150`.
+- [ ] Generate `dev_20` as a deterministic subset of `dev_100`.
+- [ ] Keep TEACh in the source plan with a small documented count.
+- [ ] Exclude synthetic rewrites from the core human-labelled dataset.
+- [ ] Make split scripts stratify by source, compound status, risk, strategy, and ambiguity type.
+- [ ] Default final run configs to Gemini 3.1 Flash-Lite free-tier with predicted-risk mode.
+
+## Human Checklist
+
+- [ ] Approve the final source-count mix before freezing splits.
+- [ ] Verify every included example has human-approved labels and provenance.
+- [ ] Check that `dev_20` examples are a subset of `dev_100`.
+- [ ] Confirm that `test` contains enough compound and high-risk cases for meaningful analysis.
+- [ ] Review TEACh examples manually for sufficient dialogue context and proposal alignment.
+- [ ] Confirm optional `train` examples are not presented as evidence of mandatory SFT.
 
 ---
+
+**<- Previous:** [Data Selection Logging](06_data_selection_logging.md) | **Next ->** [Systems Under Comparison](08_systems_under_comparison.md)
 
 ---
 
 ## 8. Systems Under Comparison
 
-All 5 systems consume `ManagerInput` and produce `ManagerOutput`. All are evaluated on the same frozen test set with the same metric functions.
+All systems consume the same `ManagerInput` and produce validated `ManagerOutput`. Final results use the frozen `test.jsonl`, predicted risk, cached predictions, and identical metric functions.
 
-### 8.1 Always Clarify
+## Systems
 
-```python
-class AlwaysClarify(BaselineSystem):
-    """Returns 'clarify' for every command. No parsing, no classification."""
-    def predict(self, input: ManagerInput) -> ManagerOutput:
-        return ManagerOutput(
-            predicted_intent=input.command,
-            predicted_slots={},
-            predicted_ambiguity_types=[],
-            predicted_primary_ambiguity_type=None,
-            predicted_is_compound=False,
-            predicted_capability_status="unknown",
-            predicted_risk_level="unknown",
-            predicted_strategy="clarify",
-            predicted_clarification_question="Could you please clarify what you mean?",
-            ...
-        )
-```
+| System | Final definition | Gemini calls |
+|--------|------------------|-------------:|
+| `always_clarify` | Always predicts `clarify`; no parser/classifier advantage | 0 |
+| `always_resolve` | Always predicts `silently_resolve`; exposes unsafe guessing | 0 |
+| `degree_based` | Routes from scalar ambiguity degree plus predicted risk/capability; no type semantics | limited/configured |
+| `direct_gemini` | Gemini 3.1 Flash-Lite maps input directly to full `ManagerOutput` | 1 per example |
+| `proposed_manager` | Gemini structured extraction plus deterministic type/risk/capability router | 1 per example for extractor |
 
-**What it tests**: Upper bound on clarification recall (trivially 100%). Lower bound on precision — penalises over-clarification on clear commands. If a system can't beat always-clarify on routing accuracy, it adds no value.
+Final `direct_gemini` must not silently fall back to heuristics. Failed calls are logged and handled by the pre-declared fallback policy.
 
-**Sanity check**: clarification recall must equal 1.0. Routing accuracy should be roughly equal to the proportion of examples where `gold_strategy == "clarify"`.
+## Degree-Based Baseline
 
-### 8.2 Always Silently Resolve
+The degree baseline must be serious, not a strawman. It may use predicted risk and capability to reject unsafe or impossible commands, but it must not inspect ambiguity type labels.
 
-```python
-class AlwaysResolve(BaselineSystem):
-    """Returns 'silently_resolve' for every command. Best-guess parsing."""
-    def predict(self, input: ManagerInput) -> ManagerOutput:
-        return ManagerOutput(
-            predicted_strategy="silently_resolve",
-            ...
-        )
-```
+Preferred ambiguity degree:
 
-**What it tests**: Maximum efficiency (never interrupts user). Exposes the danger of ignoring ambiguity — particularly unsafe silent-resolution rate on high-risk examples. If the unsafe silent-resolution rate is 0%, risk-aware routing is less necessary.
+- Use N=5 slot-filling samples at temperature 0.7 if Gemini quota allows.
+- Compute mean pairwise Jaccard distance over predicted slot sets.
+- Tune thresholds only on `dev_100`.
 
-**Sanity check**: unsafe silent-resolution rate should be high (many high-risk examples silently resolved).
+Quota-aware fallback:
 
-### 8.3 Degree-Based Routing
+- If Gemini throttles, use one structured extractor confidence/uncertainty field or deterministic scalar heuristic.
+- Label the fallback clearly in the report and limitations.
 
-> [!IMPORTANT]
-> This is the **most important baseline**. It must be a serious comparison, not a strawman. If degree-based routing matches the proposed manager, the type-awareness contribution is weakened.
+## Fairness Requirements
 
-#### Mathematical Definition of Ambiguity Degree
-We formally define the ambiguity degree $D$ using the Context Sampling output-variance method (primary proxy). This guarantees that the baseline runs identically regardless of whether we use open-source local LLMs on the HPC or closed API endpoints locally (which do not provide token-level log-probabilities).
+- Same frozen examples.
+- Same visible input fields.
+- Same output schema.
+- Same primary model path for Gemini-backed systems.
+- Same predicted-risk policy in primary runs.
+- No gold risk, gold strategy, source ambiguity labels, or clarification answers in final model prompts.
+- Fixed seeds for sampling, splitting, bootstrapping, and synthetic robustness if used.
 
-**Jaccard Distance from Context Sampling (Primary Proxy)**:
-We sample $N = 5$ slot-filling completions $S_1, S_2, \dots, S_5$ at temperature $T = 0.7$. The ambiguity degree is calculated as:
-$$D = 1 - \frac{2}{N(N-1)} \sum_{1 \le i < j \le N} \text{Jaccard}(S_i, S_j)$$
-where $\text{Jaccard}(S_i, S_j) = \frac{|S_i \cap S_j|}{|S_i \cup S_j|}$ is the overlap between the extracted key-value slot pairs. High disagreement (low overlap) between samples yields a high ambiguity degree $D$.
+## Coding LLM Checklist
 
-*Note: Token-Level Log-Probability Entropy is rejected as a proxy because closed LLM APIs (e.g. GPT-4o-mini) do not provide full token probabilities, preventing consistent baseline evaluation.*
+- [ ] Ensure uniform baselines do not inherit proposed-manager parsing unless labelled as common-upstream diagnostics.
+- [ ] Ensure direct Gemini has no heuristic fallback in final evaluation.
+- [ ] Ensure proposed and direct Gemini use the same model ID and schema.
+- [ ] Implement degree-based routing without ambiguity-type semantics.
+- [ ] Log prediction source, fallback status, prompt hash, and validation result for every output.
 
-```python
-class DegreeBased(BaselineSystem):
-    """Routes based on ambiguity degree (0–1 scalar) + risk/capability thresholds.
-    Does NOT use ambiguity-type semantics. Motivated by ClarifyVC-style severity routing."""
+## Human Checklist
 
-    def __init__(self, clarify_threshold=0.5, reject_risk_threshold=0.7):
-        self.clarify_threshold = clarify_threshold
-        self.reject_risk_threshold = reject_risk_threshold
+- [ ] Audit every baseline for fairness before final evaluation.
+- [ ] Confirm no system receives hidden gold labels or label-leaking metadata.
+- [ ] Confirm degree-based routing is strong enough not to be a strawman.
+- [ ] Confirm the comparison is about routing policy, not model-family differences.
+- [ ] Confirm failed Gemini calls are handled according to the pre-declared policy.
 
-    def predict(self, input: ManagerInput) -> ManagerOutput:
-        # Step 1: Get ambiguity degree from LLM (Jaccard Distance of slot sets across N=5 samples)
-        degree = self._calculate_ambiguity_degree(input)  # 0.0–1.0
-
-        # Step 2: Check risk — degree-based IS allowed to reject unsafe commands
-        risk_score = self._get_risk_score(input)
-        if risk_score >= self.reject_risk_threshold:
-            return ManagerOutput(predicted_strategy="face_preserving_rejection", ...)
-
-        # Step 3: Check capability
-        if self._is_incapable(input):
-            return ManagerOutput(predicted_strategy="face_preserving_rejection", ...)
-
-        # Step 4: Threshold routing (NO type semantics)
-        if degree >= self.clarify_threshold:
-            return ManagerOutput(predicted_strategy="clarify", ...)
-        else:
-            return ManagerOutput(predicted_strategy="execute", ...)
-```
-
-**Key design**: degree-based routing IS allowed to use risk/capability input to reject unsafe commands (this is fair — it would be a strawman if it couldn't reject at all). But it does **NOT** use explicit ambiguity-type semantics to differentiate between clarify vs. silently_resolve vs. multi_step. That type-specific differentiation is what the proposed manager adds.
-
-**What it tests**: Whether ambiguity *degree* alone is sufficient for routing, or whether *type* information is needed. This directly tests the core claim.
-
-**Sanity check**: Should outperform uniform baselines (always_clarify, always_resolve) on single-type examples. Should struggle on compound examples where different ambiguity types need different strategies.
-
-### 8.4 Direct LLM (SFT Baseline)
-
-```python
-class DirectLLM(BaselineSystem):
-    """Fine-tuned (SFT) baseline. Maps inputs directly to ManagerOutput without explicit pipeline/routing rules."""
-    def predict(self, input: ManagerInput) -> ManagerOutput:
-        return self.fine_tuned_direct_llm.parse(
-            input=input,
-            response_model=ManagerOutput,
-        )
-```
-
-**Fairness Design**: To prevent a strawman comparison and ensure experimental validity, the **Direct LLM baseline is also fine-tuned (SFT)** on the exact same `train.jsonl` dataset as the proposed manager. The sole difference is architectural: the Direct LLM learns to map raw commands and context directly to the output schema (`ManagerOutput` decision) in a single end-to-end mapping step, without the intermediate explicit multi-stage routing taxonomy (Stages 1-5) used by the proposed coordinator. This isolates the value of the explicit routing rules.
-
-**What it tests**: Whether a fine-tuned model can do routing implicitly, or whether an explicit pipeline with structured routing rules is required.
-
-**Sanity check**: Should produce reasonable results but be inconsistent at routing boundaries — sometimes clarifying when it should resolve, sometimes resolving when it should clarify. The explicit router should be more consistent.
-
-### 8.5 Proposed Type-and-Risk-Aware Manager
-
-Described in full in §9. This is the core contribution.
-
-### 8.6 Fairness Requirements
-
-- **Same input**: Every system gets identical `ManagerInput` objects.
-- **Same output schema**: Every system returns validated `ManagerOutput` objects.
-- **Same metrics**: Every system is evaluated with the same metric functions.
-- **Same LLM backbone**: For LLM-based systems (degree-based, direct LLM, proposed), use the same underlying model backbone (e.g., `gpt-4o-mini` for API baseline, and Qwen-2.5-7B / Llama-3-8B for local HPC).
-- **Same Training Exposure**: Both the proposed manager and the Direct LLM baseline are fine-tuned on the identical `train.jsonl` split under the same hyperparameters, ensuring a fair, zero-bias comparison.
-- **Same risk input**: In the primary experiment, all systems evaluate using predicted risk levels. Secondary ablations can evaluate using the gold `risk_level` to isolate routing performance given perfect risk knowledge.
-- **Fixed seeds**: Any randomness uses fixed seeds.
+---
+**Previous:** [Dataset Construction Plan](07_dataset_construction.md) | **Next:** [Proposed Router - Core Contribution](09_proposed_router.md)
 
 ---
 
----
+## 9. Proposed Router - Core Contribution
 
-## 9. Proposed Router — Core Contribution
+The proposed manager is not a black-box learned router in the primary experiment. It is:
 
-The router is a staged pipeline. Each stage is independently testable.
+1. Gemini 3.1 Flash-Lite structured extraction of intent, slots, ambiguity, risk, and capability signals.
+2. Deterministic routing rules over those signals.
+3. Generated clarification or rejection text when needed.
 
-### 9.1 Pipeline Architecture
+## Pipeline
 
-```
-Input (command + context)
-  → Stage 1: PARSE — extract intent + slots
-  → Stage 2: CLASSIFY AMBIGUITY — multi-label types + primary type + compound flag + uncertainty scoring via context sampling (§9.5)
-  → Stage 3: PREDICT RISK LEVEL — SFT LLM risk classification (none, low, medium, high, critical) (§13)
-  → Stage 4: CHECK CAPABILITY — Map intent to required primitive physical actions and check them against the structured `capability_context` (action repertoire list, e.g. `["grab_object", "move_robot"]`). If any required action is missing, set `capability_status` to `incapable`.
-  → Stage 5: ROUTE — apply type + risk + capability decision rules
-  → Stage 6: GENERATE — produce clarification question or rejection text if needed
-  → Output (ManagerOutput)
-```
-
-### 9.2 Stage 5: Routing Decision Rules
-
-This is the core contribution. The rules are explicit, inspectable, and reportable.
-
-```python
-class TypeRiskRouter:
-    """Routes based on ambiguity type, risk level, and capability status.
-    This is the main contribution — explicit type-and-risk-aware coordination."""
-
-    def route(self, ambiguity: AmbiguityResult, risk_level: str,
-              capability: CapabilityResult) -> RoutingDecision:
-
-        # Priority 1: REJECT if unsafe or incapable
-        if capability.status == "incapable":
-            return RoutingDecision("face_preserving_rejection",
-                                  reason="Robot lacks required capabilities")
-        if risk_level in ("high", "critical") and self._is_unsafe(ambiguity, risk_level):
-            return RoutingDecision("face_preserving_rejection",
-                                  reason="High risk — unsafe to proceed without confirmation")
-
-        # Priority 2: EXECUTE if unambiguous + safe + capable
-        if not ambiguity.ambiguity_present:
-            return RoutingDecision("execute", reason="Clear, safe, capable command")
-
-        # Priority 3: MULTI-STEP if compound ambiguity
-        if ambiguity.is_compound:
-            sequence = self._build_strategy_sequence(ambiguity, risk_level)
-            return RoutingDecision("multi_step", strategy_sequence=sequence,
-                                  reason="Compound ambiguity — ordered resolution needed")
-
-        # Priority 4: TYPE-SPECIFIC routing for single ambiguity
-        primary = ambiguity.primary_ambiguity_type
-
-        if primary in ("referential", "underspecified"):
-            return RoutingDecision("clarify",
-                                  reason=f"{primary} — missing critical information")
-
-        if primary in ("temporal", "quantitative"):
-            if risk_level in ("none", "low"):
-                return RoutingDecision("silently_resolve",
-                                      reason=f"{primary}, low risk — ground internally")
-            return RoutingDecision("clarify",
-                                  reason=f"{primary}, elevated risk — ask user")
-
-        if primary == "pragmatic":
-            if risk_level in ("none", "low"):
-                return RoutingDecision("silently_resolve",
-                                      reason="ISA, low risk — reinterpret pragmatically")
-            return RoutingDecision("clarify",
-                                  reason="ISA, elevated risk — confirm interpretation")
-
-        # Fallback
-        return RoutingDecision("clarify", reason="Uncertain — default to clarification")
-
-    def _build_strategy_sequence(self, ambiguity, risk_level):
-        """Ordered sub-strategies for compound ambiguity."""
-        sequence = []
-        types = ambiguity.ambiguity_types
-        if "pragmatic" in types:
-            sequence.append("silently_resolve")  # Reinterpret ISA first
-        if "referential" in types or "underspecified" in types:
-            sequence.append("clarify")           # Ask about missing info
-        if "temporal" in types or "quantitative" in types:
-            if risk_level in ("none", "low"):
-                sequence.append("silently_resolve")
-            else:
-                sequence.append("clarify")
-        return sequence or ["clarify"]
+```text
+ManagerInput
+  -> Stage 1: parse intent and slots
+  -> Stage 2: classify ambiguity types, primary type, compound status
+  -> Stage 3: predict risk level from command/context
+  -> Stage 4: check capability against available action repertoire
+  -> Stage 5: route using explicit rules
+  -> Stage 6: generate clarification/rejection text
+  -> ManagerOutput
 ```
 
-### 9.3 Why Explicit Rules, Not a Learned Router
+Stages 1-4 may be one compact Gemini structured call for quota efficiency. Stage 5 must remain deterministic and auditable.
 
-1. **Inspectable**: Every routing decision has a traceable reason string. The report can show exactly why each decision was made.
-2. **Aligned with proposal**: The proposal describes a routing framework with explicit type-and-risk semantics, not a black-box classifier.
-3. **Testable**: Each rule can be unit-tested. You can verify "pragmatic + low risk → silently_resolve" directly.
-4. **Differentiable from baselines**: The degree-based baseline uses a scalar threshold. The direct LLM is implicit. This router's advantage is the explicit type-aware coordination — that must be visible in the code and the report.
-5. **Honours-appropriate**: A learned router would need training data, hyperparameter search, and cross-validation — all adding scope. Rules are sufficient and defensible.
+## Routing Rules
 
-### 9.4 Schema Validation and LLM Retry
+Apply in order:
 
-For LLM-based stages (Parse, Classify, Generate), use `instructor` with `max_retries=3`:
+| Priority | Condition | Strategy |
+|----------|-----------|----------|
+| 1 | incapable | `face_preserving_rejection` |
+| 2 | high/critical and unsafe to proceed | `face_preserving_rejection` |
+| 3 | unambiguous, safe, capable | `execute` |
+| 4 | compound ambiguity needing ordered handling | `multi_step` |
+| 5 | referential or underspecified primary ambiguity | `clarify` |
+| 6 | temporal/quantitative and none/low risk | `silently_resolve` |
+| 7 | temporal/quantitative and medium+ risk | `clarify` |
+| 8 | pragmatic and none/low risk | `silently_resolve` |
+| 9 | pragmatic and medium+ risk | `clarify` |
+| 10 | uncertainty/failure | clarify if low risk, reject or clarify conservatively if elevated risk |
 
-```python
-import instructor
-from litellm import completion
+## Multi-Step Sequence Rule
 
-client = instructor.from_litellm(completion)
+If compound:
 
-def parse_with_retry(prompt, response_model, max_retries=3):
-    return client.chat.completions.create(
-        model=config.model_name,
-        messages=[{"role": "user", "content": prompt}],
-        response_model=response_model,
-        max_retries=max_retries,
-    )
-```
+1. Pragmatic reinterpretation first: `silently_resolve`.
+2. Referential or underspecified gaps: `clarify`.
+3. Temporal/quantitative low-risk gaps: `silently_resolve`.
+4. Temporal/quantitative medium+ risk gaps: `clarify`.
 
-If all retries fail: log the error and return a conservative fallback (`predicted_strategy="clarify"`).
+## Context Sampling
 
-### 9.5 Context Sampling & Output-Variance Scoring
+Context sampling is optional for the primary run because Gemini free-tier throttling is possible. If enabled, use it only with a fixed call budget and tune thresholds on `dev_100`. If disabled, report this as a limitation and use single-pass structured output confidence/uncertainty fields.
 
-To derive the uncertainty signal and detect when to escalate a command, the proposed manager uses context sampling with output-variance scoring.
+## Coding LLM Checklist
 
-1. **Sampling Protocol**:
-   The manager samples $N=5$ completions for the ambiguity classification task at temperature $T=0.7$.
-2. **Output-Variance Calculation**:
-   Let $T_i \subseteq \mathcal{T}$ be the set of predicted ambiguity types in sample $i$. The type-level variance $Var_{types}$ is the mean pairwise Jaccard distance:
-   $$Var_{types} = 1 - \frac{2}{N(N-1)} \sum_{1 \le i < j \le N} \frac{|T_i \cap T_j|}{|T_i \cup T_j|}$$
-   Let $s_i \in \mathcal{S}$ be the routing strategy predicted in sample $i$. The strategy-level entropy $H_{strategy}$ is computed as:
-   $$H_{strategy} = - \sum_{s \in \mathcal{S}} P(s) \log_2 P(s)$$
-   where $P(s)$ is the proportion of samples that predicted strategy $s$.
-3. **Escalation Threshold & Safety Fallback**:
-   We set initial uncertainty thresholds $\theta_{var} = 0.35$ and $\theta_{entropy} = 0.50$ (to be empirically tuned on the dev_100 split to optimize classification performance while preventing test-set overfitting). If $Var_{types} \ge \theta_{var}$ or $H_{strategy} \ge \theta_{entropy}$, the manager flags the instruction as having high uncertainty. To maintain safety:
-   - If the predicted risk level is `medium`, `high`, or `critical`, the manager overrides the decision to `face_preserving_rejection` (safely refusing to execute without a clear, verified instruction).
-   - If the predicted risk level is `none` or `low`, the manager overrides the decision to `clarify` (asking the user for clarification).
+- [ ] Keep routing rules deterministic and unit-testable.
+- [ ] Implement primary risk prediction without reading gold `risk_level`.
+- [ ] Cache every Gemini response with model ID, prompt hash, temperature, retry count, and schema version.
+- [ ] Make context sampling configurable and off by default if quota is tight.
+- [ ] Emit route reason strings for failure analysis.
+
+## Human Checklist
+
+- [ ] Approve the high-risk policy: reject vs clarify for recoverable ambiguity.
+- [ ] Approve the policy for `unknown` and `partially_capable`.
+- [ ] Review router traces for all five strategies before final evaluation.
+- [ ] Confirm router policy matches the gold-label protocol.
+- [ ] Confirm any disabled context-sampling feature is documented as a limitation.
 
 ---
+**Previous:** [Systems Under Comparison](08_systems_under_comparison.md) | **Next:** [Ablation Studies](10_ablation_studies.md)
 
 ---
 
 ## 10. Ablation Studies
 
-> [!IMPORTANT]
-> Ablations are **mandatory**. They isolate what each routing signal contributes. Without ablations, you cannot claim that type-awareness or risk-awareness specifically help — you can only show the full system works.
+Ablations are mandatory. Without them, the report can only say the full system worked or failed; it cannot say which signal mattered.
 
-### 10.1 Required Ablations
+## Required Ablations
 
-| System | What Is Removed | What Remains | What It Proves |
-|--------|----------------|--------------|----------------|
-| **Proposed (full)** | Nothing | All signals | Baseline for comparison |
-| **No-type ablation** | Ambiguity type semantics | Risk + capability + ambiguity degree (scalar) | **Critical**: tests whether type-awareness is needed beyond degree. If no-type ≈ full → type info is redundant |
-| **No-risk ablation** | Risk signal | Type + capability | Tests whether risk-awareness contributes to safe routing. If no-risk has similar unsafe-silent-resolution rate → risk signal is redundant |
-| **No-capability ablation** | Capability context | Type + risk | Tests whether capability checking prevents false rejections |
+| System | Removed | Keeps | What it tests |
+|--------|---------|-------|---------------|
+| Full proposed | nothing | type + risk + capability | main system |
+| `no_type` | ambiguity type semantics | ambiguity degree + risk + capability | whether type-awareness helps |
+| `no_risk` | risk signal | type + capability | whether risk-awareness prevents unsafe routing |
+| `no_capability` | capability context | type + risk | whether capability checking matters |
 
-### 10.2 Implementation
+All ablations reuse cached extractor outputs where possible. They must not make extra Gemini calls unless a pre-declared diagnostic requires it.
 
-Each ablation is a variant of the router with one signal zeroed out:
+## Table 2 Metrics
 
-```python
-class NoTypeRouter(TypeRiskRouter):
-    """Ablation: ignores ambiguity type. Uses only ambiguity degree + risk + capability."""
-    def route(self, ambiguity, risk_level, capability):
-        # Still rejects if unsafe/incapable (same as full)
-        if capability.status == "incapable":
-            return RoutingDecision("face_preserving_rejection", ...)
-        if risk_level in ("high", "critical") and self._is_unsafe(...):
-            return RoutingDecision("face_preserving_rejection", ...)
-        # No type-specific routing — just use degree threshold
-        if ambiguity.ambiguity_present:
-            return RoutingDecision("clarify", reason="Ambiguity detected (no type info)")
-        return RoutingDecision("execute", ...)
+Report at minimum:
 
-class NoRiskRouter(TypeRiskRouter):
-    """Ablation: ignores risk signal. Uses only type + capability."""
-    def route(self, ambiguity, risk_level, capability):
-        # Ignores risk_level entirely — treats everything as low risk
-        return super().route(ambiguity, risk_level="none", capability=capability)
+- routing accuracy
+- compound routing accuracy
+- high-risk routing accuracy
+- clarification F1
+- unsafe silent-resolution rate
+- safe rejection rate
 
-class NoCapabilityRouter(TypeRiskRouter):
-    """Ablation: ignores capability context. Uses only type + risk."""
-    def route(self, ambiguity, risk_level, capability):
-        # Treats everything as capable
-        return super().route(ambiguity, risk_level,
-                            capability=CapabilityResult(status="capable", reason="ablated"))
-```
+## Interpretation Rules
 
-### 10.3 Optional: Rule-Only Manager
+- Full vs `no_type`: evidence for or against type-awareness.
+- Full vs `no_risk`: evidence for or against risk-awareness.
+- Full vs `no_capability`: evidence for or against capability checks.
+- If ablations match the full system, say so honestly and discuss redundancy or underpowered data.
 
-If time permits, add a variant where Stages 1–2 (Parse, Classify) use rule-based heuristics instead of LLM calls. This would test whether a fully non-LLM router can compete — interesting if it can, interesting if it can't.
+## Coding LLM Checklist
 
-### 10.4 Ablation Results → Table 2
+- [ ] Implement all three required ablations.
+- [ ] Ensure ablations use the same cached predictions/extractor signals as the full system.
+- [ ] Ensure `no_type` does not inspect ambiguity-type labels.
+- [ ] Ensure `no_risk` cannot use gold or predicted risk.
+- [ ] Generate `results/tables/table2_ablations.csv`.
 
-| System | Routing Acc | Compound Acc | Unsafe Silent-Res Rate | Clarification F1 |
-|--------|-------------|-------------|----------------------|-------------------|
-| Proposed (full) | — | — | — | — |
-| No-type | — | — | — | — |
-| No-risk | — | — | — | — |
-| No-capability | — | — | — | — |
+## Human Checklist
 
-Key comparisons:
-- Full vs no-type → contribution of type-awareness (the core claim)
-- Full vs no-risk → contribution of risk-awareness (especially on unsafe-silent-res rate)
-- Full vs no-capability → contribution of capability checking
+- [ ] Confirm each ablation removes exactly the intended signal.
+- [ ] Review whether Table 2 actually supports the claimed contribution.
+- [ ] Check unsafe silent-resolution changes manually for high/critical examples.
+- [ ] Confirm non-improving ablations are reported honestly.
+- [ ] Use ablation results in the report interpretation, not just as extra numbers.
+
+---
+**Previous:** [Proposed Router - Core Contribution](09_proposed_router.md) | **Next:** [Statistical Significance Testing](11_statistical_testing.md)
 
 ---
 
 ## 11. Statistical Significance Testing
 
-> [!IMPORTANT]
-> Flat accuracy numbers alone are not sufficient final evidence. The report must include significance tests and confidence intervals to defend the main claims.
+Flat accuracy numbers are not enough. The final report must quantify uncertainty and paired system differences.
 
-### 11.1 McNemar's Test
+## McNemar Test
 
-Compare the proposed manager against the **best-performing baseline** on routing correctness.
+Primary comparison: proposed manager vs best-performing baseline on frozen-test strict routing correctness.
 
-McNemar's test is appropriate because:
-- It tests paired binary outcomes (correct/incorrect) on the same test examples
-- It does not assume independence between systems (they see the same data)
-- It is standard for comparing classifiers on a shared test set
+Use:
 
-```python
-from scipy.stats import chi2
+- exact McNemar if discordant pairs are small
+- continuity-corrected chi-square McNemar otherwise
+- alpha = 0.05
+- report `b`, `c`, statistic, p-value, and accuracy difference
 
-def mcnemar_test(gold, pred_a, pred_b):
-    """pred_a = proposed manager, pred_b = best baseline."""
-    # b = cases where A is correct and B is wrong
-    # c = cases where A is wrong and B is correct
-    b = sum(1 for g, a, b in zip(gold, pred_a, pred_b)
-            if a == g and b != g)
-    c = sum(1 for g, a, b in zip(gold, pred_a, pred_b)
-            if a != g and b == g)
-    if b + c == 0:
-        return {"statistic": 0, "p_value": 1.0, "note": "No discordant pairs"}
-    statistic = (abs(b - c) - 1) ** 2 / (b + c)  # with continuity correction
-    p_value = 1 - chi2.cdf(statistic, df=1)
-    return {"statistic": statistic, "p_value": p_value, "b": b, "c": c}
-```
+TEACh turns from the same episode are correlated. Collapse to the first ambiguous turn per episode for significance testing.
 
-Report the p-value. Use α = 0.05 as the significance threshold. If p > 0.05, state that the difference is not statistically significant and discuss what this means.
+## Bootstrap Confidence Intervals
 
-**Independence Assumption & Multi-Turn Episode Collapsing**:
-To satisfy the core independence assumption of McNemar's test, multi-turn episodes from the TEACh dataset must not be treated as independent samples. Instead, multi-turn episodes will be collapsed so that **only the first ambiguous turn of each episode is included** in the significance test calculation. This prevents highly correlated consecutive conversational turns from biasing and invalidating the computed $p$-values.
+Use paired bootstrap with seed 42 and 10,000 resamples for:
 
-### 11.2 Bootstrap 95% Confidence Intervals & Primary Metrics
+- overall routing accuracy
+- paired routing accuracy difference
+- compound routing accuracy
+- high-risk routing accuracy
+- unsafe silent-resolution rate
 
-Compute bootstrap CIs and metrics for:
-- **Routing accuracy** (overall)
-- **Compound-routing accuracy** (subset where `is_compound == true`)
-- **High-risk routing accuracy** (subset where `risk_level ∈ {high, critical}`)
-- **Counter-Question Coverage (CQC)**: Formally evaluates clarification quality by checking whether the manager's generated clarification question targets the specific slot/parameter missing in the gold record (CQC = count of targeted questions / total clarification questions). An independent LLM prompt verifies if the question successfully targets the `gold_clarification_answer_type` slot.
-  - **Human-in-the-loop Calibration**: To anchor the LLM-as-a-judge scores and eliminate potential self-preference bias, a random subset of 50 clarification questions will be human-rated on a 1–5 scale following the ClarifyVC human evaluation protocol. We report the correlation (Pearson's $r$) between human and LLM ratings.
-- **Risk-Averse Hazard Breakdown**: To avoid obscuring critical failures, the safety metrics must break down the **Unsafe Silent-Resolution Rate** by **Hazard Type**:
-  - **Property Damage Hazards** (e.g. dropping items, task failures)
-  - **Human Safety Hazards** (e.g. electrical shocks, knife handling, fire hazards)
-  We enforce and verify a strict **0% unsafe silent-resolution rate** specifically on all critical human-safety hazards.
+If zero unsafe events are observed, report an exact/binomial upper confidence bound. Do not claim the system is safe from zero observed events alone.
 
-```python
-import numpy as np
+## Optional Synthetic Robustness Set
 
-def bootstrap_ci(metric_fn, gold, predictions, n_bootstrap=10000, seed=42):
-    rng = np.random.RandomState(seed)
-    n = len(gold)
-    scores = []
-    for _ in range(n_bootstrap):
-        indices = rng.choice(n, size=n, replace=True)
-        sample_gold = [gold[i] for i in indices]
-        sample_pred = [predictions[i] for i in indices]
-        scores.append(metric_fn(sample_gold, sample_pred))
-    lower = np.percentile(scores, 2.5)
-    upper = np.percentile(scores, 97.5)
-    return {"mean": np.mean(scores), "ci_lower": lower, "ci_upper": upper}
-```
+Synthetic rewrites are optional robustness analysis, not the basis of the primary statistical claim.
 
-### 11.3 Scripts and Outputs
+If used:
 
-| Script | Output |
-|--------|--------|
-| `scripts/significance_tests.py` | `results/statistics/significance_results.json` |
-| `scripts/bootstrap_ci.py` | `results/statistics/bootstrap_ci.json` |
+- keep rewrites separate from the human-labelled frozen test set
+- validate semantic preservation
+- report results separately
+- use cluster bootstrap by parent example if inferential statistics are shown
+- do not claim inflated power from correlated rewrites
 
-These feed into Table 9.
+## Coding LLM Checklist
 
-### 11.4 What to Report if Results Are Not Significant
+- [ ] Implement strict routing correctness: `predicted_strategy == gold_strategy`.
+- [ ] Implement exact/continuity-corrected McNemar as appropriate.
+- [ ] Bootstrap paired differences with seed 42.
+- [ ] Keep synthetic robustness statistics separate from primary statistics.
+- [ ] Save `b`, `c`, p-value, confidence intervals, and sample counts.
 
-If McNemar's p > 0.05:
-- Report it honestly: "The improvement is not statistically significant at α = 0.05."
-- Check subgroup significance: compound-only, high-risk-only.
-- Discuss sample size limitations: 200 test examples may be insufficient for small effect sizes.
-- This is acceptable for honours — the analysis itself is valuable.
+## Human Checklist
 
-### 11.5 Synthetic Test Expansion with Drift-Control Verification
-To ensure McNemar's test has sufficient statistical power to detect small effect sizes (under 5 percentage points) without manual annotation labor:
-1. **Adversarial Rewrite Pipeline**: Using the ClarifyVC adversarial rewrite pipeline, we will prompt an independent LLM (e.g. Claude 3.5 Sonnet / GPT-4) to rewrite each of the 200 frozen test examples into 3 structurally distinct but semantic-preserving variations.
-2. **Perturbations Applied**:
-   - Synonym swapping (e.g., "move" -> "transport", "thing" -> "object").
-   - Dialogue/context phrasing changes (e.g. modifying the wording of the scene context).
-   - Sentence structure alterations (e.g., active to passive voice).
-3. **Drift-Control Design**: To prevent "unintended semantic drift" or the accidental removal of ambiguity (as warned in ClarifyVC), we implement an independent validation step:
-   - For each generated variant, an independent validator LLM (with zero-shot prompt instructions) blindly predicts the intent and primary ambiguity type of the variant.
-   - The variant is only accepted into the expanded test set if the validator's prediction matches the seed's original gold labels.
-   - If a variant fails validation, it is discarded, and the pipeline re-runs generation (up to 3 times) before falling back to synonym-only replacements.
-4. **Expanded Size**: This expands the test set to $N=600$ verified examples. Evaluated systems are run on the full 600 examples, increasing the statistical power of the McNemar test from ~55% to >90% for detecting minor differences in routing accuracy.
+- [ ] Confirm the best baseline is selected before interpreting McNemar.
+- [ ] Confirm TEACh correlated turns are collapsed for significance testing.
+- [ ] Confirm synthetic rewrites are not described as independent evidence.
+- [ ] Interpret non-significant results honestly as inconclusive or mixed.
+- [ ] Check that statistical claims directly answer the research question.
+
+---
+**Previous:** [Ablation Studies](10_ablation_studies.md) | **Next:** [Failure Analysis](12_failure_analysis.md)
 
 ---
 
 ## 12. Failure Analysis
 
-> [!IMPORTANT]
-> Failure analysis is a **required deliverable**, not an optional polish step. It directly supports the rubric criteria "understanding of results" and "limitations discussed". Even if overall results are mixed, detailed failure analysis demonstrates methodological rigour.
+Failure analysis is required. It is how the author demonstrates understanding of the results and discusses limitations.
 
-### 12.1 Error Categories
+## Error Layers
 
-| Error Layer | Category | Description |
-|-------------|----------|-------------|
-| **Ambiguity Classification** | `missed_type` | Gold ambiguity type not predicted |
-| | `extra_type` | Predicted type not in gold |
-| | `wrong_primary` | Primary type incorrect |
-| | `missed_compound` | Gold is compound, predicted as single |
-| | `false_compound` | Gold is single, predicted as compound |
-| **Risk** | `risk_mismatch` | Predicted risk disagrees with gold |
-| **Capability** | `wrong_capability` | Capability status incorrect |
-| **Context / History** | `context_history_mismatch` | Failure to properly incorporate context or history from previous dialogue turns, e.g. ignoring resolved referents or slot values in `dialogue_history` |
-| **Routing** | `over_clarify` | Predicted clarify, gold ∈ {execute, silently_resolve} |
-| | `under_clarify` | Predicted execute/resolve, gold is clarify |
-| | `missed_rejection` | Should have rejected, didn't |
-| | `false_rejection` | Rejected when should have executed/clarified |
-| | `wrong_multistep` | Multi-step predicted but wrong sequence |
+| Layer | Categories |
+|-------|------------|
+| Schema/API | invalid JSON, schema failure, retry exhaustion, rate-limit failure |
+| Intent/slot | wrong intent, missing slot, wrong slot value, hallucinated slot |
+| Ambiguity | missed type, extra type, wrong primary, missed compound, false compound |
+| Risk | mismatch, high-risk underestimated, false high-risk escalation, hazard type wrong |
+| Capability | wrong capability, false capable, false incapable, partial capability mishandled |
+| Context/history | ignored dialogue history, ignored scene context, stale referent |
+| Routing | over-clarify, under-clarify, missed rejection, false rejection, unsafe silent resolution, wrong multi-step sequence |
+| Output quality | vague clarification, wrong target, poor rejection explanation |
+| Data/gold issue | ambiguous gold label, mapping error, manual example artifact |
 
-### 12.2 Analysis Dimensions
+Each representative failure needs one primary root cause and optional secondary tags.
 
-Analyse failures by:
-- **Ambiguity type**: Which types cause the most routing errors?
-- **Compound vs non-compound**: Does compound status increase error rate?
-- **Risk level**: Are high-risk errors more common?
-- **Source dataset**: Do some sources produce more errors?
-- **Predicted vs gold strategy**: Where does the confusion matrix cluster?
+## Analysis Dimensions
 
-### 12.3 Error Separation
+Break failures down by:
 
-Separate classification errors from routing errors:
+- ambiguity type
+- compound vs non-compound
+- risk level
+- source dataset
+- gold strategy
+- predicted strategy
+- system
 
-```python
-def error_layer(gold, pred):
-    """Determine whether an error is upstream (classification) or downstream (routing)."""
-    # If previous dialogue history context was misapplied
-    if getattr(pred, 'predicted_context_history_applied', True) != getattr(gold, 'gold_context_history_applied', True):
-        return "context_history_mismatch"
-    # If ambiguity labels are wrong, it's a classification error
-    if set(pred.predicted_ambiguity_types) != set(gold.ambiguity_types):
-        return "ambiguity_classification"
-    # If risk is wrong, it's a risk error
-    if pred.predicted_risk_level != gold.risk_level:
-        return "risk_classification"
-    # If labels are correct but routing is wrong, it's a routing policy error
-    if pred.predicted_strategy != gold.gold_strategy:
-        return "routing_policy"
-    return "correct"
-```
-
-This is critical for interpretation: "The routing policy is correct given correct labels in X% of cases, but the ambiguity classifier has Y% accuracy" → the bottleneck is classification, not routing.
-
-### 12.4 Representative Error Cases
-
-Select 8–12 representative failure examples covering each error layer. For each:
-
-```json
-{
-  "example_id": "ambik_042",
-  "command": "Can you move that thing over there in a few minutes?",
-  "gold_strategy": "multi_step",
-  "predicted_strategy": "clarify",
-  "error_layer": "ambiguity_classification",
-  "error_type": "missed_compound",
-  "gold_ambiguity_types": ["pragmatic", "referential", "temporal"],
-  "predicted_ambiguity_types": ["referential"],
-  "analysis": "Classifier detected referential ambiguity but missed the pragmatic ISA and temporal vagueness. This caused the router to treat it as a single-type case and select clarify instead of multi_step."
-}
-```
-
-### 12.5 Outputs
+## Required Outputs
 
 | Output | Contents |
 |--------|----------|
-| `results/tables/failure_analysis.csv` | Summary counts: error layer × error category × count (→ Table 10) |
-| `results/failure_cases/representative_errors.jsonl` | 8–12 annotated failure examples with analysis |
+| `results/tables/failure_analysis.csv` | counts by error layer/category |
+| `results/failure_cases/representative_errors.jsonl` | 8-12 human-interpreted cases |
+| Table 10 | report-ready summary |
+
+Representative cases must include command, source, gold labels, prediction, root cause, and human-written explanation.
+
+## Coding LLM Checklist
+
+- [ ] Implement automatic error tagging where deterministic.
+- [ ] Output failure counts by layer, category, source, risk, strategy, and compound status.
+- [ ] Include raw prediction references for every representative failure.
+- [ ] Separate upstream classification failures from downstream routing-policy failures.
+- [ ] Generate Table 10 from saved failure artifacts.
+
+## Human Checklist
+
+- [ ] Select 8-12 representative failures manually.
+- [ ] Write or approve the explanation for every representative failure.
+- [ ] Check whether any failure is actually a gold-label/data issue.
+- [ ] Use failure analysis to write limitations and future work.
+- [ ] Confirm the discussion explains why systems behaved differently.
+
+---
+**Previous:** [Statistical Significance Testing](11_statistical_testing.md) | **Next:** [Safety API Integration](13_safety_api.md)
 
 ---
 
----
+## 13. Safety API Integration and Risk Prediction
 
-## 13. Safety API Integration & Risk Prediction
+The primary experiment uses predicted risk, not gold risk. This prevents leakage and makes the evaluation realistic.
 
-> [!IMPORTANT]
-> To ensure the manager is truly "risk-aware" without data leakage, the primary evaluation uses predicted risk levels rather than gold risk labels. The risk signal is predicted directly from the command and context. An external safety API is an optional secondary input-signal source.
+## Risk Modes
 
-### 13.1 Risk Sourcing Modes
+| Mode | Source | Use |
+|------|--------|-----|
+| `predicted` | Gemini structured risk classification from command/context | primary experiment |
+| `gold` | annotated `risk_level` | diagnostic/oracle ablation only |
+| `mock` | deterministic mapping for tests | development only |
+| `api` | external safety API | optional comparison |
 
-The system supports four modes for obtaining the risk signal:
+## External Safety API Contract
 
-| Mode | Source | Use Case | Dependency |
-|------|--------|----------|------------|
-| `predicted_risk_mode` | SFT LLM risk classification (none, low, medium, high, critical) | **Primary experiment** — all main results | None |
-| `gold_risk_mode` | Gold `risk_level` from the annotated example | **Ablation/Secondary experiment** — routing performance given perfect risk knowledge | None |
-| `mock_safety_mode` | Deterministic mock that maps risk_level to a score | Development and testing | None |
-| `external_safety_api_mode` | HTTP call to colleague's API endpoint | **Optional experiment** — comparison of safety classifiers | Colleague's API running |
+Optional request:
 
-> [!WARNING]
-> The primary experiment uses `predicted_risk_mode` to ensure a realistic evaluation without data leakage. The secondary ablation uses `gold_risk_mode` to isolate routing performance given perfect risk knowledge.
-
-Configuration in `configs/`:
-```yaml
-risk_mode: "predicted"  # or "gold" or "mock" or "api"
-safety_api:
-  endpoint: "http://localhost:8000/api/v1/safety/check"
-  timeout_seconds: 5
-  max_retries: 2
-```
-
-### 13.2 Mock Safety Client
-
-```python
-class MockSafetyClient:
-    RISK_TO_SCORE = {"none": 0.0, "low": 0.15, "medium": 0.45, "high": 0.75, "critical": 0.95}
-
-    def check(self, command, intent, gold_risk_level):
-        score = self.RISK_TO_SCORE.get(gold_risk_level, 0.0)
-        return SafetyResult(is_safe=score < 0.7, risk_score=score,
-                           risk_category=gold_risk_level, source="mock")
-```
-
-### 13.3 External API Contract (if used)
-
-Agree with colleague on this contract. Document in `docs/safety_api_contract.md`.
-
-**Request** (`POST /api/v1/safety/check`):
 ```json
 {"command": "Hand me the knife", "intent": "hand_object", "request_id": "uuid"}
 ```
 
-**Response** (`200 OK`):
+Optional response:
+
 ```json
 {"is_safe": false, "risk_score": 0.85, "risk_category": "high", "explanation": "Sharp object handling risk"}
 ```
 
-Timeout: 5s. Retries: 2 (exponential backoff). On failure: fall back to `mock_safety_mode` and log the error.
+Log timeout, retry count, latency, fallback, and source.
 
-### 13.4 How to Report the Safety Integration
+## Reporting Rule
 
-In methodology:
-> "Risk input for the primary experiment is predicted directly from the command and context using the Supervised Fine-Tuned (SFT) model. This ensures a realistic end-to-end evaluation without data leakage from gold risk labels. We also evaluate an ablation using gold risk labels to assess routing performance under perfect risk knowledge. An optional experiment using an external safety API developed by [colleague] is included to compare safety classification methods."
+Methodology wording:
 
-In results:
-> "Table 8 compares routing accuracy under predicted risk vs. gold risk labels. The difference of X percentage points suggests [interpretation]."
+> Risk input for the primary experiment is predicted directly from the command and context using Gemini 3.1 Flash-Lite structured output. Gold risk labels are used only in a diagnostic oracle ablation to estimate routing performance under perfect risk knowledge.
+
+## Coding LLM Checklist
+
+- [ ] Add `predicted`, `gold`, `mock`, and `api` risk modes in schema/config.
+- [ ] Ensure final evaluation defaults to `predicted`, not `gold`.
+- [ ] Log risk source, raw risk output, parsed risk, confidence if available, and fallback status.
+- [ ] Ensure gold risk is inaccessible to Gemini prompts in primary runs.
+- [ ] Implement API timeout/retry/fallback logging if external safety API is used.
+
+## Human Checklist
+
+- [ ] Review every high and critical gold risk label before freezing the test set.
+- [ ] Review every critical Gemini risk prediction before reporting safety-sensitive claims.
+- [ ] Confirm gold-risk runs are labelled diagnostic/oracle, not primary.
+- [ ] Confirm free-tier Gemini data handling is acceptable for risk examples.
+- [ ] Document any external safety API limitations or failures in the report.
 
 ---
+**Previous:** [Failure Analysis](12_failure_analysis.md) | **Next:** [HPC Execution Plan](14_hpc_execution.md)
 
 ---
 
 ## 14. HPC Execution Plan
 
-You have access to a SLURM-managed HPC cluster with CPU and GPU partitions. Use it as an **experiment accelerator**, not a dependency. The core experiment must remain runnable locally on small dev splits.
+HPC is a fallback and accelerator, not a primary dependency. The Gemini-first experiment must remain reproducible from cached local files.
 
-### 14.1 Partition Strategy
+Use HPC for:
 
-| Job Type | Partition | When to Use |
-|----------|-----------|-------------|
-| Full evaluation (all systems on test set) | `biggpu` (GPU) | Phase 4+ |
-| Ablation runs | `biggpu` (GPU) | Phase 4+ |
-| Bootstrap CIs (10,000 iterations) | `bigbatch` or `batch` (CPU) | Phase 4+ |
-| McNemar tests | `bigbatch` or `batch` (CPU) | Phase 4+ |
-| Metrics computation | `bigbatch` or `batch` (CPU) | Phase 4+ |
-| Local LLM baseline (pre-trained backbone) | `biggpu` (GPU) | Phase 3+ |
-| Repeated sampling / variance estimation (context sampling) | `biggpu` (GPU) | Phase 3+ |
-| LoRA fine-tuning (core method) | `biggpu` (GPU) | Phase 3/4 |
+- batch inference if Gemini throttles or a local model fallback is approved
+- bootstrap/statistical jobs if local runtime is slow
+- optional local LLM/SFT extension after primary results are stable
 
-### 14.2 Job Scripts
+Do not claim HPC/local-LLM/SFT results unless predictions, configs, and logs are saved.
 
-#### `jobs/eval_cpu.sbatch` — Run full evaluation (CPU)
-```bash
-#!/bin/bash
-#SBATCH --job-name=raam-eval
-#SBATCH --partition=bigbatch
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --time=02:00:00
-#SBATCH --output=logs/eval_%j.out
-#SBATCH --error=logs/eval_%j.err
+## Job Types
 
-module load python/3.11
-source venv/bin/activate
-python scripts/run_evaluation.py --config configs/final_eval.yaml
-```
+| Job | Partition | Use |
+|-----|-----------|-----|
+| cached metrics/statistics | CPU batch | recompute tables and CIs |
+| final batch inference | GPU if local LLM used | fallback only |
+| ablations | CPU/GPU depending on implementation | usually from cached outputs |
+| optional LoRA/SFT | GPU | extension only |
 
-#### `jobs/eval_array.sbatch` — Array job for ablations (one per system)
-```bash
-#!/bin/bash
-#SBATCH --job-name=raam-ablation
-#SBATCH --partition=bigbatch
-#SBATCH --array=0-3
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --time=01:00:00
-#SBATCH --output=logs/ablation_%A_%a.out
+## Local Development Guarantee
 
-ABLATIONS=(proposed_full no_type no_risk no_capability)
-SYSTEM=${ABLATIONS[$SLURM_ARRAY_TASK_ID]}
+This must always work without HPC:
 
-module load python/3.11
-source venv/bin/activate
-python scripts/run_evaluation.py --config configs/ablation.yaml --system $SYSTEM
-```
-
-#### `jobs/bootstrap_stats.sbatch` — Bootstrap CIs (CPU)
-```bash
-#!/bin/bash
-#SBATCH --job-name=raam-bootstrap
-#SBATCH --partition=bigbatch
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=8G
-#SBATCH --time=00:30:00
-#SBATCH --output=logs/bootstrap_%j.out
-
-module load python/3.11
-source venv/bin/activate
-python scripts/bootstrap_ci.py --predictions-dir results/predictions/ --output results/statistics/bootstrap_ci.json
-python scripts/significance_tests.py --predictions-dir results/predictions/ --output results/statistics/significance_results.json
-```
-
-#### `jobs/eval_local_llm_gpu.sbatch` — Local LLM / Fine-Tuned Model (GPU)
-```bash
-#!/bin/bash
-#SBATCH --job-name=raam-local-llm
-#SBATCH --partition=biggpu
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
-#SBATCH --gres=gpu:1
-#SBATCH --time=04:00:00
-#SBATCH --output=logs/local_llm_%j.out
-
-module load python/3.11 cuda/12.1
-source venv/bin/activate
-python scripts/run_evaluation.py --config configs/local_llm.yaml --system direct_llm_local
-```
-
-### 14.3 Local Development Guarantee
-
-The core experiment runs locally without HPC:
-```bash
-# Local smoke test — works on any machine with Python + API key
+```powershell
 python scripts/run_evaluation.py --config configs/dev_20.yaml
+python scripts/run_evaluation.py --config configs/final_eval.yaml --use-cached-predictions
 ```
 
-HPC is used to accelerate the full evaluation, run bootstrap CIs efficiently, and optionally run local LLM baselines. It is never a blocking dependency.
+## Coding LLM Checklist
+
+- [ ] Keep local `dev_20` and cached-prediction evaluation runnable without HPC.
+- [ ] Write HPC scripts only for final batch inference, bootstrap/statistics, or optional local-LLM fallback.
+- [ ] Save SLURM stdout/stderr logs for any HPC result reported.
+- [ ] Ensure HPC-generated predictions use the same `ManagerOutput` schema and metrics.
+- [ ] Do not mix Gemini and HPC/local-LLM results in the same primary table unless clearly labelled.
+
+## Human Checklist
+
+- [ ] Confirm actual HPC partition names and queue limits before relying on jobs.
+- [ ] Confirm any HPC/SFT result in the report has matching cached prediction files.
+- [ ] Confirm Gemini throttling or experiment scale justifies HPC use.
+- [ ] Review HPC job logs for failures before accepting generated predictions.
+- [ ] Ensure the report does not imply HPC/local-LLM work happened unless it did.
+
+---
+**Previous:** [Safety API Integration](13_safety_api.md) | **Next:** [Local LLM and SFT Fallback Guidance](15_sft_guidance.md)
 
 ---
 
-## 15. Local LLM Supervised Fine-Tuning (SFT) Guidance
+## 15. Local LLM and SFT Fallback Guidance
 
-### 15.1 Core Training Strategy
-The proposed manager is implemented by fine-tuning an open-source LLM (such as **Qwen/Qwen2.5-7B-Instruct** or **meta-llama/Meta-Llama-3-8B-Instruct**) on `train.jsonl`.
+The primary experiment uses Gemini 3.1 Flash-Lite structured outputs plus a deterministic router. Local LLMs and SFT are not part of the core claim unless actually run, cached, and reported as a separate extension.
 
-1. **Parameter-Efficient Fine-Tuning (PEFT)**: Use LoRA (Low-Rank Adaptation) with rank $r=8$ or $r=16$, and alpha $\alpha=32$. Train only the attention projection matrices (`q_proj`, `k_proj`, `v_proj`, `o_proj`).
-2. **SFT Objective**: Train the model to generate the complete JSON matching the Stage 1-6 intermediate steps and final `ManagerOutput` structure.
-3. **Training Data**: SFT uses the `train.jsonl` split (augmented with synthetic variations to ensure robust mapping).
-4. **Multi-Turn Dialogue Formatting**: To prevent the model from failing to distinguish conversational turns, `dialogue_history` must be formatted using the model's standard chat templates (e.g., ChatML tags like `<|im_start|>user\n...<|im_end|>` and `<|im_start|>assistant\n...<|im_end|>`) instead of plain text concatenation, separating user instructions, robot responses, and environment observations.
-5. **System Prompt & Capability Context Injection**: To ensure the model behaves consistently under capability constraints and prevents hallucinations, the `capability_context` (i.e. the robot's physical limitation action repertoire list, such as `["grab_object", "move_robot"]`) must be explicitly formatted and injected into the `<|im_start|>system` instruction block *before* the dialogue history begins. This allows the SFT manager to evaluate physical capability boundaries accurately during Stage 4.
+## When To Use This
 
-### 15.2 Serving and Inference
-On HPC GPU node:
-- **Preferred**: `vLLM` — fast inference server, OpenAI-compatible API, supports structured output.
-- **Alternative**: `transformers` with `pipeline` — simpler setup, slower inference.
-- **Not recommended**: Ollama on HPC — not designed for SLURM job management, should not run on login nodes.
+Use local LLM/SFT only if:
 
-### 15.3 Integration
-Use `litellm` to abstract the model backend:
-```yaml
-# configs/local_llm.yaml
-model_name: "openai/Qwen2.5-7B-Instruct"  # litellm routes to local vLLM server
-api_base: "http://localhost:8000/v1"
-```
-The code remains identical — only the config changes.
+- Gemini throttling prevents completing cached final predictions, or
+- supervisors approve an extension after the Gemini-first experiment is stable, or
+- a robustness comparison against local open-source models is explicitly needed.
 
-### 15.4 SFT Phase in Pipeline
-- **When**: SFT training runs in Phase 3/4 on the HPC `biggpu` partition.
-- **Backbone**: The fine-tuned model forms the backbone of the proposed manager, while the pre-trained/frozen base model serves as the "Direct LLM" baseline.
+## Optional Training Strategy
+
+If approved:
+
+- Use a small open-source instruct model compatible with available HPC GPUs.
+- Use LoRA/PEFT rather than full fine-tuning.
+- Train only on `train.jsonl`.
+- Never train on `dev_100` or `test`.
+- Save training config, seed, checkpoint, prompt template, and predictions.
+
+## Serving
+
+Preferred: `vLLM` with an OpenAI-compatible endpoint. Alternative: `transformers` pipeline. Do not run long-lived servers on login nodes.
+
+## Reporting Rule
+
+If local LLM/SFT is used, report it as:
+
+- fallback result, if Gemini throttled
+- extension result, if added after primary experiment
+
+Do not silently replace the Gemini-first methodology.
+
+## Coding LLM Checklist
+
+- [ ] Keep SFT code/config separate from primary Gemini configs.
+- [ ] Do not require SFT for `dev_20`, `dev_100`, or final cached Gemini evaluation.
+- [ ] If SFT is run, save training config, seed, checkpoint path, prompt format, and prediction cache.
+- [ ] Ensure direct local-LLM and proposed local-LLM variants use fair matching backbones.
+- [ ] Clearly label SFT outputs as fallback/extension outputs unless the whole methodology is revised.
+
+## Human Checklist
+
+- [ ] Approve any SFT/local-LLM run before spending HPC time.
+- [ ] Confirm SFT does not replace the Gemini-first plan silently.
+- [ ] Verify train/test separation before any SFT run.
+- [ ] Review whether SFT results are strong enough and fair enough to include.
+- [ ] Ensure the final report states exactly which model path produced each table.
+
+---
+**Previous:** [HPC Execution Plan](14_hpc_execution.md) | **Next:** [Tools](16_tools.md)
 
 ---
 
-## 16. Tools: Required, Recommended, and Rejected
+## 16. Tools
 
-### 16.1 Required
+Use the smallest toolset that makes the experiment reproducible.
+
+## Required
 
 | Tool | Purpose |
 |------|---------|
-| Python 3.11+ | Language |
-| Pydantic v2 | Schema validation, JSON Schema generation, type safety |
-| JSONL | Data format (streaming, diff-friendly, standard) |
-| scikit-learn | `f1_score`, `classification_report`, `cohen_kappa_score`, `confusion_matrix` |
-| scipy | `chi2` for McNemar's test |
-| pandas | Aggregation, table generation |
-| numpy | Bootstrap sampling |
-| pytest | Testing |
-| YAML + `omegaconf` or `pyyaml` | Config management |
+| Python 3.11+ | project language |
+| Pydantic v2 | schema validation and JSON schema export |
+| JSONL | datasets and predictions |
+| pandas | result tables |
+| numpy | bootstrap sampling |
+| scipy | McNemar/statistical tests |
+| scikit-learn | F1, kappa, confusion matrices |
+| pytest | focused checks |
+| PyYAML or omegaconf | configs |
+| Gemini API client or LiteLLM | Gemini 3.1 Flash-Lite calls |
 
-### 16.2 Recommended (use if helpful)
+## Recommended
 
-| Tool | Purpose | Note |
-|------|---------|------|
-| `litellm` | Unified LLM API (OpenAI, Anthropic, local) | Avoids vendor lock-in |
-| `instructor` | Schema-constrained LLM output with automatic retry | Critical for structured decoding |
-| `httpx` | HTTP client for safety API | Modern, async-capable |
-| `tabulate` | LaTeX/Markdown table export | Simple and effective |
-| `matplotlib` + `seaborn` | Publication-quality figures | Standard for academic papers |
-| `tenacity` | Retry logic | Clean decorator-based retries |
-| `ruff` | Linting + formatting | Fast, replaces black + flake8 |
-
-### 16.3 Explicitly Rejected
-
-| Tool | Why NOT |
+| Tool | Purpose |
 |------|---------|
-| **n8n** | Workflow automation platform. Not suited for controlled experimental evaluation. Adds non-determinism and deployment complexity with no benefit for reproducible research |
-| **LangChain** | Unnecessary abstraction layer. Adds complexity between your code and the LLM. For a research project with 5 specific system variants, direct LLM calls (via litellm/instructor) are simpler, more transparent, and easier to debug |
-| **RAG / CAG** | Retrieval-augmented generation is irrelevant unless retrieving robot manuals or safety documents, which is not the current research question. The system routes commands, it does not retrieve knowledge |
-| **Agents framework** | Agent orchestration (e.g., CrewAI, AutoGen) is designed for multi-agent workflows. This project has a single pipeline with fixed stages — no agent coordination needed |
-| **Raw weight inspection** | Inspecting model weights/activations does not provide useful confidence or interpretability for a routing evaluation study. Uncertainty is better measured via output variance (context sampling) if needed |
-| **Docker** | Overhead not justified for honours. `pyproject.toml` + `requirements.txt` + README is sufficient |
-| **MLflow / W&B** | Experiment tracking overhead not justified for ~10 system variants × 1 test set. File-based results in `results/` are sufficient and more reproducible |
+| tenacity | retry/backoff |
+| httpx | optional safety API |
+| matplotlib/seaborn | figures |
+| ruff | lint/format |
+
+## Rejected Unless Strongly Justified
+
+| Tool | Why |
+|------|-----|
+| LangChain | unnecessary abstraction for fixed prompts and schemas |
+| n8n | not reproducible experimental control |
+| agent frameworks | project is a fixed pipeline, not autonomous multi-agent execution |
+| MLflow/W&B | file-based results are enough |
+| Docker | overhead for honours unless environment drift becomes a blocker |
+
+## Coding LLM Checklist
+
+- [ ] Prefer existing dependencies and standard library before adding tools.
+- [ ] Keep Gemini calls direct, schema-validated, cached, and logged.
+- [ ] Keep optional HPC/local-LLM dependencies out of the primary install if possible.
+- [ ] Add dependency changes to `requirements.txt` or `pyproject.toml`.
+- [ ] Avoid adding rejected tools unless the plan is updated with a concrete reason.
+
+## Human Checklist
+
+- [ ] Confirm every dependency is actually needed.
+- [ ] Confirm no secret keys are committed.
+- [ ] Confirm Gemini API usage follows free-tier privacy constraints.
+- [ ] Confirm optional HPC/local-LLM tools are not required for reproducing primary tables.
+- [ ] Confirm setup instructions match the final toolset.
+
+---
+**Previous:** [Local LLM and SFT Fallback Guidance](15_sft_guidance.md) | **Next:** [Repository Structure](17_repository_structure.md)
 
 ---
 
 ## 17. Repository Structure
 
-```
+The repository must make the experiment inspectable without rerunning Gemini.
+
+```text
 risk-aware-ambiguity-manager/
-│
-├── README.md                              # Setup, reproduction instructions, one-command run
-├── pyproject.toml                         # Project metadata + dependencies
-├── requirements.txt                       # Pinned dependencies for reproducibility
-├── .env.example                           # Template for API keys
-├── .gitignore
-│
-├── configs/
-│   ├── dev_20.yaml                        # Phase 1 MVE config
-│   ├── dev_100.yaml                       # Development config
-│   ├── final_eval.yaml                    # Final test set config
-│   ├── ablation.yaml                      # Ablation run config
-│   └── local_llm.yaml                     # Optional local LLM config
-│
-├── data/
-│   ├── raw/                               # Unmodified source files
-│   │   ├── ambik/
-│   │   ├── sagc/
-│   │   ├── indirect_requests/
-│   │   ├── safe_agent_bench/
-│   │   └── teach/                         # Optional
-│   ├── interim/                           # Per-source mapped JSONL
-│   │   ├── ambik_mapped.jsonl
-│   │   ├── sagc_mapped.jsonl
-│   │   ├── indirect_requests_mapped.jsonl
-│   │   ├── safe_agent_bench_mapped.jsonl
-│   │   ├── teach_mapped.jsonl             # Optional
-│   │   └── filtering_log.jsonl            # Data selection log (§6)
-│   ├── manual/
-│   │   └── compound_50.jsonl              # Hand-crafted compound examples
-│   ├── processed/
-│   │   ├── dev_20.jsonl
-│   │   ├── dev_100.jsonl
-│   │   ├── train.jsonl
-│   │   ├── test.jsonl                     # FROZEN — do not edit after manifest date
-│   │   ├── manifest.json                  # Split metadata + freeze record
-│   │   └── errata.md                      # Post-freeze corrections (if any)
-│   ├── annotation/
-│   │   ├── annotator_a.jsonl              # Primary annotator labels (30 IAA subset)
-│   │   └── annotator_b.jsonl              # Second annotator labels (30 IAA subset)
-│   └── README.md                          # Data provenance + licence notes
-│
-├── schemas/
-│   ├── example_schema.json                # Auto-generated from Pydantic
-│   ├── manager_input.json
-│   ├── manager_output.json
-│   └── safety_api.json
-│
-├── docs/
-│   ├── annotation_guidelines.md           # Operational labelling rules (§4)
-│   ├── ambiguity_taxonomy.md              # Type definitions + decision tree
-│   ├── routing_strategy_definitions.md    # What each strategy means
-│   ├── dataset_mapping_rules.md           # Per-source mapping logic
-│   └── safety_api_contract.md             # API contract with colleague
-│
-├── src/
-│   ├── __init__.py
-│   ├── schema.py                          # Pydantic models — single source of truth
-│   ├── config.py                          # Config loading
-│   ├── llm_client.py                      # Unified LLM interface
-│   │
-│   ├── manager/
-│   │   ├── __init__.py
-│   │   ├── pipeline.py                    # Orchestrator: stages 1→6
-│   │   ├── parser.py                      # Stage 1: intent + slots
-│   │   ├── ambiguity_classifier.py        # Stage 2: multi-label types
-│   │   ├── risk_provider.py               # Stage 3: gold / mock / API risk
-│   │   ├── capability_checker.py          # Stage 4: capability check
-│   │   ├── router.py                      # Stage 5: TYPE+RISK ROUTING (core contribution)
-│   │   └── generator.py                   # Stage 6: clarification/rejection text
-│   │
-│   ├── baselines/
-│   │   ├── __init__.py
-│   │   ├── base.py                        # Abstract BaselineSystem interface
-│   │   ├── always_clarify.py
-│   │   ├── always_resolve.py
-│   │   ├── degree_based.py
-│   │   └── direct_llm.py
-│   │
-│   ├── ablations/
-│   │   ├── __init__.py
-│   │   ├── no_type_router.py
-│   │   ├── no_risk_router.py
-│   │   └── no_capability_router.py
-│   │
-│   ├── data/
-│   │   ├── __init__.py
-│   │   ├── loader.py                      # Load + validate JSONL
-│   │   ├── validator.py                   # Validate against Pydantic schema
-│   │   ├── splitter.py                    # Stratified train/dev/test splits
-│   │   └── mappers/
-│   │       ├── __init__.py
-│   │       ├── base_mapper.py             # Abstract mapper with logging
-│   │       ├── ambik_mapper.py
-│   │       ├── sagc_mapper.py
-│   │       ├── indirect_mapper.py
-│   │       ├── safety_bench_mapper.py
-│   │       └── teach_mapper.py            # Optional
-│   │
-│   └── evaluation/
-│       ├── __init__.py
-│       ├── runner.py                      # Run any system on a dataset
-│       ├── metrics.py                     # All metric computations
-│       ├── failure_analysis.py            # Error categorisation
-│       ├── tables.py                      # Table generation (CSV/LaTeX)
-│       └── plots.py                       # Figure generation (matplotlib)
-│
-├── scripts/
-│   ├── run_evaluation.py                  # MAIN: run all systems → metrics → Table 1
-│   ├── validate_dataset.py                # Validate JSONL against schema
-│   ├── map_dataset.py                     # Run a mapper on raw data
-│   ├── compute_iaa.py                     # Inter-annotator agreement (§5)
-│   ├── summarise_data_selection.py        # Data filtering summary (§6)
-│   ├── significance_tests.py             # McNemar's test (§11)
-│   ├── bootstrap_ci.py                   # Bootstrap confidence intervals (§11)
-│   ├── generate_tables.py                 # All tables from results
-│   ├── generate_figures.py                # All figures from results
-│   └── smoke_test.py                      # Quick sanity check on dev_20
-│
-├── jobs/                                  # SLURM job scripts (§14)
-│   ├── eval_cpu.sbatch
-│   ├── eval_array.sbatch
-│   ├── bootstrap_stats.sbatch
-│   └── eval_local_llm_gpu.sbatch
-│
-├── tests/
-│   ├── test_schema.py
-│   ├── test_validator.py
-│   ├── test_baselines.py
-│   ├── test_router.py
-│   ├── test_ablations.py
-│   ├── test_metrics.py
-│   ├── test_risk_provider.py
-│   └── fixtures/
-│       ├── sample_input.json
-│       ├── sample_output.json
-│       └── sample_examples.jsonl
-│
-├── results/                               # ALL generated results
-│   ├── predictions/*.jsonl
-│   ├── metrics/*.json
-│   ├── tables/*.csv
-│   ├── figures/*.png
-│   ├── statistics/
-│   │   ├── significance_results.json
-│   │   └── bootstrap_ci.json
-│   ├── annotation/
-│   │   └── iaa_results.json
-│   └── failure_cases/
-│       └── representative_errors.jsonl
-│
-└── notebooks/                             # Optional exploration
-    └── exploration.ipynb
+  README.md
+  pyproject.toml
+  requirements.txt
+  .env.example
+  configs/
+    dev_20.yaml
+    dev_100.yaml
+    final_eval.yaml
+    ablation.yaml
+    local_llm.yaml
+  data/
+    raw/<dataset>/
+    interim/*_mapped.jsonl
+    interim/filtering_log.jsonl
+    manual/compound_50.jsonl
+    processed/dev_20.jsonl
+    processed/dev_100.jsonl
+    processed/train.jsonl
+    processed/test.jsonl
+    processed/manifest.json
+    processed/errata.md
+    annotation/annotator_a.jsonl
+    annotation/annotator_b.jsonl
+  docs/
+    annotation_guidelines.md
+    ambiguity_taxonomy.md
+    routing_strategy_definitions.md
+    dataset_mapping_rules.md
+    safety_api_contract.md
+    plan/*.md
+  schemas/
+    example_schema.json
+    manager_input.json
+    manager_output.json
+  src/
+    schema.py
+    config.py
+    llm_client.py
+    baselines/
+    manager/
+    ablations/
+    data/
+    evaluation/
+  scripts/
+    run_evaluation.py
+    validate_dataset.py
+    compute_iaa.py
+    summarise_data_selection.py
+    significance_tests.py
+    bootstrap_ci.py
+    generate_tables.py
+    generate_figures.py
+    smoke_test.py
+  jobs/
+  results/
+    predictions/*.jsonl
+    metrics/*.json
+    tables/*.csv
+    figures/*.png
+    statistics/*.json
+    annotation/*.json
+    failure_cases/*.jsonl
+  cache/
+    llm_responses/
 ```
+
+TEACh is included because the proposal names it. Local LLM/HPC files are allowed but must be clearly optional.
+
+## Coding LLM Checklist
+
+- [ ] Keep generated predictions, metrics, tables, figures, and statistics under `results/`.
+- [ ] Keep raw Gemini response cache under `cache/llm_responses/` or equivalent.
+- [ ] Add missing scripts only when required by a plan doc.
+- [ ] Keep optional HPC/SFT files separate from primary Gemini configs.
+- [ ] Ensure all paths are project-relative, not machine-specific.
+
+## Human Checklist
+
+- [ ] Confirm data provenance and license notes exist under `data/raw/`.
+- [ ] Confirm `test.jsonl` and `manifest.json` are present before final evaluation.
+- [ ] Confirm cached predictions correspond to the frozen manifest.
+- [ ] Confirm optional outputs are clearly labelled.
+- [ ] Confirm repository structure is clean before submission.
+
+---
+**Previous:** [Tools](16_tools.md) | **Next:** [Reproducibility and Code Visibility](18_reproducibility.md)
 
 ---
 
 ## 18. Reproducibility and Code Visibility
 
-### 18.1 Required Files
+The examiner must be able to inspect results without live Gemini, HPC, or API keys.
+
+## Required Files
 
 | File | Contents |
 |------|----------|
-| `README.md` | Project overview, setup instructions, one-command reproduction, data provenance, link to report |
-| `pyproject.toml` | Project metadata, dependencies, entry points |
-| `requirements.txt` | Pinned dependencies (`pip freeze > requirements.txt`) |
-| `.env.example` | Template: `OPENAI_API_KEY=sk-...` |
-| `configs/final_eval.yaml` | Exact config used for final results |
+| `README.md` | setup, data notes, one-command reproduction |
+| `requirements.txt` or `pyproject.toml` | pinned dependencies |
+| `.env.example` | environment variable template |
+| `configs/final_eval.yaml` | exact final evaluation config |
+| `data/processed/manifest.json` | frozen split metadata and hashes |
 
-### 18.2 Fixed Random Seed
+## Cached Inference
 
-Every script that involves randomness must use a fixed seed:
-```python
-RANDOM_SEED = 42  # Set in config, used everywhere
+All final predictions must be saved in `results/predictions/`. Each LLM-backed prediction should include:
+
+- model ID
+- provider/path: Gemini, HPC fallback, or local extension
+- prompt hash
+- schema version
+- temperature
+- retry count
+- cache key
+- raw response
+- parsed output
+- fallback status
+
+## One-Command Reproduction
+
+```powershell
+python scripts/run_evaluation.py --config configs/final_eval.yaml --use-cached-predictions
 ```
 
-Applied in: data splitting, bootstrap sampling, any LLM temperature settings.
+This must regenerate final metrics and tables from cached predictions without live API calls.
 
-### 18.3 One-Command Reproduction & Cached Inference
+## Coding LLM Checklist
 
-To enable the examiner to verify results and reproduce Table 1 instantly on standard local hardware (e.g. personal laptops without massive GPUs or API key expenditures):
-1. **Inference vs. Evaluation Separation**: The raw inference predictions generated by all models (including the SFT 8B manager) on the test set are pre-computed on the HPC cluster and committed directly to the Git repository in the `results/predictions/` folder (e.g., `predictions_proposed.jsonl`, `predictions_direct_llm.jsonl`, etc.).
-2. **One-Command Table Generation**: Running `python scripts/run_evaluation.py` on the local machine reads these cached prediction logs and computes the final evaluation metrics, generating Table 1 and Table 2 in seconds:
-   ```bash
-   git clone <repo-url>
-   cd risk-aware-ambiguity-manager
-   pip install -e .
-   python scripts/run_evaluation.py --config configs/final_eval.yaml --use-cached-predictions
-   ```
-   This generates:
-   ```
-   results/metrics/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json
-   results/tables/table1_main_results.csv
-   ```
-   This ensures perfect reproducibility without requiring access to frontier API keys or high-end local GPUs.
+- [ ] Save raw and parsed predictions for every system.
+- [ ] Save model ID, prompt hash, temperature, retry count, cache key, schema version, and timestamp.
+- [ ] Make table/stat generation work from cached predictions with no live API calls.
+- [ ] Hash frozen datasets and include hashes in `manifest.json`.
+- [ ] Ensure rerunning evaluation from cache reproduces existing CSV tables exactly.
 
-### 18.4 Repository Visibility
+## Human Checklist
 
-The repository must be either:
-- Public on GitHub, or
-- Private with examiner/supervisor access granted
+- [ ] Run the one-command cached reproduction before submission.
+- [ ] Verify cached predictions correspond to the frozen `test.jsonl` hash.
+- [ ] Confirm API keys are not committed.
+- [ ] Confirm repo access is public or granted to supervisors/examiner.
+- [ ] Confirm the AI declaration matches actual Gemini/Codex usage.
 
-Include the repository URL in the report.
-
-### 18.5 Saved Artefacts
-
-All prediction files, metric files, tables, figures, and statistics must be committed to the repository (or attached to the submission). The examiner should not need to re-run anything to see the results — but they *could* if they wanted to verify.
+---
+**Previous:** [Repository Structure](17_repository_structure.md) | **Next:** [Quality Gates](19_quality_gates.md)
 
 ---
 
 ## 19. Quality Gates
 
-### Pre-Evaluation Checklist
+No final claims until these gates pass.
 
-| # | Gate | How to Verify | Phase |
-|---|------|---------------|-------|
-| 1 | `dev_20` smoke test passes | `python scripts/smoke_test.py` exits 0 | Phase 1 |
-| 2 | Schema validation passes on all splits | `python scripts/validate_dataset.py data/processed/dev_20.jsonl` (etc.) | Phase 1 |
-| 2b | Blind Validation of Manual Examples | 50 manual examples passed independent consensus validation | Phase 2 |
-| 3 | 30-example IAA completed | `data/annotation/annotator_a.jsonl` + `annotator_b.jsonl` exist with 30 examples each | Phase 2 |
-| 4 | Cohen's κ computed and ≥ 0.75 | `python scripts/compute_iaa.py` → check `results/annotation/iaa_results.json` | Phase 2 |
-| 5 | `filtering_log.jsonl` generated | `data/interim/filtering_log.jsonl` exists and has records for every mapper | Phase 2 |
-| 6 | `test.jsonl` frozen with manifest | `data/processed/manifest.json` exists with freeze date | Phase 2 |
-| 7 | All 4 baselines implemented and passing | `pytest tests/test_baselines.py` passes | Phase 3 |
-| 8 | Proposed manager implemented and passing | `pytest tests/test_router.py` passes | Phase 3 |
-| 9 | All 3 ablations implemented | `pytest tests/test_ablations.py` passes | Phase 4 |
-| 10 | McNemar's test completed | `results/statistics/significance_results.json` exists | Phase 4 |
-| 11 | Bootstrap CIs completed | `results/statistics/bootstrap_ci.json` exists | Phase 4 |
-| 12 | Failure analysis completed | `results/tables/failure_analysis.csv` + `results/failure_cases/representative_errors.jsonl` exist | Phase 5 |
-| 13 | Table 1 reproducible with one command | `python scripts/run_evaluation.py --config configs/final_eval.yaml --use-cached-predictions` produces identical results locally in seconds | Phase 5 |
-| 14 | README complete with reproduction instructions | Manual review | Phase 7 |
-| 15 | GitHub repo ready (public or examiner-accessible) | Manual review | Phase 7 |
+| # | Gate | Verification |
+|---|------|--------------|
+| 1 | `dev_20` smoke test passes | `python scripts/smoke_test.py` |
+| 2 | schema validation passes | `python scripts/validate_dataset.py data/processed/*.jsonl` |
+| 3 | `risk_mode="predicted"` supported | schema/config tests |
+| 4 | no gold-risk leakage in primary run | config/unit test |
+| 5 | manual compound validation complete | human sign-off |
+| 6 | filtering log generated | `data/interim/filtering_log.jsonl` |
+| 7 | IAA complete | `results/annotation/iaa_results.json` |
+| 8 | test set frozen | `data/processed/manifest.json` |
+| 9 | all systems implemented | prediction files exist |
+| 10 | ablations implemented | Table 2 exists |
+| 11 | McNemar and CIs computed | statistics JSON exists |
+| 12 | failure analysis complete | Table 10 and representative cases exist |
+| 13 | cached reproduction works | final eval from cache succeeds |
+| 14 | report limitations drafted | human review |
+| 15 | repo ready | human review |
 
-### Code Quality (run before every commit)
+## Code Quality
 
-```bash
-ruff check src/ tests/ scripts/
-ruff format src/ tests/ scripts/
-pytest tests/ -v
-python scripts/validate_dataset.py data/processed/dev_20.jsonl
+```powershell
+ruff check src tests scripts
+ruff format src tests scripts
+pytest tests -v
+python -m compileall src scripts
 ```
+
+Use the available subset if a tool is not installed yet; document skipped checks.
+
+## Coding LLM Checklist
+
+- [ ] Implement gates as scripts/tests where possible.
+- [ ] Add a guard preventing final configs from using gold risk unless labelled diagnostic.
+- [ ] Ensure every generated output is schema-validated.
+- [ ] Ensure failed Gemini calls are visible in logs/artifacts.
+- [ ] Keep smoke-test and final-test outputs clearly separated.
+
+## Human Checklist
+
+- [ ] Manually verify data and risk labels before final evaluation.
+- [ ] Check IAA and adjudication notes before freeze.
+- [ ] Confirm all high/critical examples are reviewed.
+- [ ] Confirm final tables are generated from frozen cached predictions.
+- [ ] Confirm limitations cover any failed or skipped gate.
+
+---
+**Previous:** [Reproducibility and Code Visibility](18_reproducibility.md) | **Next:** [Timeline](20_timeline.md)
 
 ---
 
 ## 20. Timeline
 
-### Phase 1: Schema + Minimum Viable Experiment (Weeks 0–2)
+## Phase 1: Schema and Smoke Test
 
-**Goal**: End-to-end experiment working on dev_20. Table 1 draft exists.
+| Deliverable | Done when |
+|-------------|-----------|
+| schema/config support | `risk_mode="predicted"` exists |
+| `dev_20` | validates and covers all strategies |
+| baseline/proposed smoke run | predictions, metrics, draft Table 1 exist |
 
-| Week | Deliverable | Definition of Done |
-|------|------------|-------------------|
-| W0 (now) | Approve plan, set up repo skeleton | `pyproject.toml`, `src/schema.py`, configs, `.env.example` |
-| W1 | Write dev_20 (20 manual examples) | `dev_20.jsonl` passes schema validation |
-| W1 | Implement 4 baselines | Each produces valid `ManagerOutput` on dev_20 |
-| W2 | Implement proposed router (Stages 1–6) | Full pipeline runs on dev_20 |
-| W2 | Implement metrics + Table 1 generation | `results/tables/table1_main_results.csv` has numbers |
+## Phase 2: Dataset and Annotation
 
-**Phase 1 exits with**: A working, if rough, version of the entire experiment on 20 examples.
+Goal: 310 labelled examples if feasible, frozen 150-example test set minimum.
 
-### Phase 2: Dataset Construction + Annotation (Weeks 3–5)
+| Deliverable | Done when |
+|-------------|-----------|
+| `compound_50.jsonl` | human validated |
+| source mappers | interim files and filtering log exist |
+| split files | `dev_100`, `train`, `test`, manifest exist |
+| IAA | kappa/Jaccard computed and adjudicated |
 
-**Goal**: 180–260 high-quality labelled examples. Test set frozen. IAA completed.
+## Phase 3: Gemini Prompting and Baseline Refinement
 
-| Week | Deliverable | Definition of Done |
-|------|------------|-------------------|
-| W3 | Complete 50 manual compound examples | `compound_50.jsonl` validated |
-| W3 | AmbiK mapper + filtering log | `ambik_mapped.jsonl` with 60+ examples |
-| W3b | Blind manual validation | 50 manual examples passed independent consensus validation |
-| W4 | SaGC mapper + IndirectRequests mapper | Both mapped with 50+ and 30+ examples + logs |
-| W4 | SafeAgentBench mapper + TEACh-DA mapper | Both mapped with 20+ and 20-30 examples respectively + logs (TEACh is a MUST) |
-| W5 | Merge, split, freeze test set | `test.jsonl` + `manifest.json` written |
-| W5 | IAA double-annotation (30 examples) | κ computed, ≥ 0.75, or guidelines revised |
-| W5 | Data selection summary | `results/tables/data_selection_summary.csv` |
+| Deliverable | Done when |
+|-------------|-----------|
+| Gemini structured prompts | validate on `dev_100` |
+| predicted-risk path | primary config uses `predicted` |
+| baseline audit | no gold leakage |
+| HPC fallback scripts | available if Gemini throttles |
 
-**Fallback**: If a mapper is too slow, reduce its target count. Minimum: 50 manual + 60 AmbiK + 40 SaGC + 20 IndirectRequests = 170. This is sufficient.
+## Phase 4: Final Evaluation and Ablations
 
-### Phase 3: Supervised Fine-Tuning (SFT) & Baseline Refinement (Weeks 6–7)
+| Deliverable | Done when |
+|-------------|-----------|
+| all systems on frozen test | cached predictions exist |
+| ablations | Table 2 exists |
+| stats | McNemar and bootstrap CIs exist |
+| subgroup tables | Tables 3-6 exist |
 
-**Goal**: Fine-tune the open-source LLM on `train.jsonl`. Baselines and SFT router run on dev_100.
+## Phase 5: Failure Analysis and Figures
 
-| Week | Deliverable | Definition of Done |
-|------|------------|-------------------|
-| W6 | Set up SFT pipeline on HPC | LoRA/SFT training script targeting Qwen2.5-7B-Instruct / Llama-3-8B-Instruct on HPC `biggpu` |
-| W6 | Fine-tune proposed manager | SFT run on `train.jsonl` finishes; weights saved; schema validation passes |
-| W7 | Refine baselines + SFT router | Baselines and fine-tuned proposed router produce predictions on dev_100 |
-| W7 | Degree-based routing is serious | Uses formal Jaccard distance/entropy ambiguity degree + predicted risk threshold |
-| W7 | Sanity checks pass | always_clarify recall = 1.0, always_resolve has high unsafe rate, etc. |
+| Deliverable | Done when |
+|-------------|-----------|
+| failure analysis | Table 10 and representative errors exist |
+| figures | Figures 1-8 exist |
+| source/IAA tables | Tables 7-8 exist |
 
-### Phase 4: Ablations + Statistical Tests (Weeks 8–9)
+## Phase 6: Optional Extensions
 
-**Goal**: Ablation results, McNemar's test, bootstrap CIs. Tables 2 and 9.
+Only after primary results are reproducible:
 
-| Week | Deliverable | Definition of Done |
-|------|------------|-------------------|
-| W8 | Full test-set evaluation: all 5 systems | Predictions + metrics in `results/` |
-| W8 | 3 ablations implemented and run | no-type, no-risk, no-capability results |
-| W9 | McNemar's test | `results/statistics/significance_results.json` |
-| W9 | Bootstrap CIs | `results/statistics/bootstrap_ci.json` |
-| W9 | Tables 1, 2, 3, 4, 5, 9 generated | CSVs in `results/tables/` |
+- external safety API
+- rule-only manager
+- synthetic robustness set
+- local LLM/SFT on HPC
 
-### Phase 5: Failure Analysis + Figures + Tables (Weeks 10–11)
+## Phase 7: Report Integration
 
-**Goal**: All 10 required tables and 8 figures. Failure analysis complete.
+| Deliverable | Done when |
+|-------------|-----------|
+| methodology | matches code and artifacts |
+| results | tables/figures interpreted |
+| limitations | explicit and honest |
+| reproducibility | one-command cached run works |
 
-| Week | Deliverable | Definition of Done |
-|------|------------|-------------------|
-| W10 | Failure analysis | Table 10 + representative_errors.jsonl |
-| W10 | Confusion matrix | Table 6 + Figure 4 |
-| W11 | All remaining tables (6, 7, 8) | CSVs generated |
-| W11 | All figures (1–8) | PNGs in `results/figures/` |
+## Minimum Viable Submission
 
-### Phase 6: Optional Extensions (Week 12, if time permits)
+- [ ] frozen test set with at least 150 examples
+- [ ] all five systems evaluated
+- [ ] Table 1
+- [ ] at least no-type and no-risk ablations
+- [ ] McNemar or clear note why underpowered
+- [ ] IAA reported
+- [ ] representative failures
+- [ ] limitations
+- [ ] cached reproduction
 
-| Extension | Priority | Dependency |
-|-----------|----------|------------|
-| External safety API experiment | COULD | Colleague's API running |
-| Rule-only manager ablation | COULD | Time available |
+## Coding LLM Checklist
 
-### Phase 7: Report Integration (Weeks 12–13)
+- [ ] Keep phases ordered: data and labels before final system claims.
+- [ ] Do not start optional SFT/local-LLM work before Gemini-first evaluation is reproducible.
+- [ ] Produce cached predictions before statistics and figures.
+- [ ] Ensure every phase has concrete artifacts.
+- [ ] Keep fallback scope documented if the 310-example target is reduced.
 
-| Week | Deliverable | Definition of Done |
-|------|------------|-------------------|
-| W12 | Methodology section describes pipeline accurately | Architecture diagram matches code |
-| W12 | Results section has all tables + figures | Tables 1–10, Figures 1–8 |
-| W13 | Conclusion, limitations, future work | Honest discussion of what worked and what didn't |
-| W13 | README complete, repo clean, reproduction verified | One-command reproduction works |
+## Human Checklist
 
-### Minimum Viable Submission (if time runs out at Week 10)
+- [ ] Approve any fallback from 310 examples to a smaller dataset.
+- [ ] Check IAA and label quality before final prediction runs.
+- [ ] Confirm no prompt tuning happens after test freeze.
+- [ ] Review all final tables before writing interpretation.
+- [ ] Confirm limitations are written before final conclusion polish.
 
-You need these for a defensible submission:
-
-- [ ] 150+ test examples in shared schema
-- [ ] 4 baselines + proposed manager evaluated on test set
-- [ ] Table 1 (main results) with numbers
-- [ ] Table 2 (ablation results) — at minimum no-type ablation
-- [ ] Table 9 (at minimum McNemar's p-value)
-- [ ] 5+ annotated failure examples
-- [ ] IAA results reported
-- [ ] README with reproduction instructions
+---
+**Previous:** [Quality Gates](19_quality_gates.md) | **Next:** [Report Alignment](21_report_alignment.md)
 
 ---
 
 ## 21. Report Alignment
 
-### 21.1 Artefact → Rubric Mapping
+The report must tell a bounded story: a Gemini-first, text-only NLU routing experiment tests whether explicit type/risk/capability routing improves routing decisions for compound ambiguous robot commands.
 
-| Artefact | Rubric Criterion | What It Demonstrates |
-|----------|-----------------|---------------------|
-| Table 1 | **Results**: enough to answer question | Direct numerical answer to the RQ |
-| Table 2 | **Results**: understanding of results | Isolates what each signal contributes |
-| Table 3 | **Results**: results related to RQ | Directly tests the compound hypothesis |
-| Table 4 + 5 | **Results**: understanding of results | Breakdown by risk and type |
-| Table 6 | **Results**: understanding of results | Systematic error patterns |
-| Table 7 | **Methodology**: data selection justified | Transparent data construction |
-| Table 8 | **Methodology**: data identified, adequate | Annotation reliability |
-| Table 9 | **Results**: enough to answer question | Statistical credibility |
-| Table 10 | **Results**: limitations discussed | Honest error analysis |
-| Figures 2–8 | **Presentation**: clear figures, graphs | Visual communication |
-| Architecture diagram | **Methodology**: method explained | System understanding |
-| README + repo | **Results**: code visible/available | Reproducibility |
-| Annotation guidelines | **Methodology**: method reasonable, feasible | Rigorous data construction |
-| Failure analysis | **Conclusion**: work placed in context, future work | Maturity of analysis |
+## Artifact to Rubric Mapping
 
-### 21.2 How to Write the Methodology Section
+| Artifact | Rubric support |
+|----------|----------------|
+| Table 1 | enough empirical results to answer RQ |
+| Tables 2-6 | clear understanding of where results come from |
+| Tables 7-8 | credible data and label methodology |
+| Table 9 | statistical credibility |
+| Table 10 | limitations and failure understanding |
+| cached predictions | reproducibility |
+| annotation guidelines | method rigor |
+| failure cases | author interpretation |
 
-Structure it as:
-1. **System overview** (1 paragraph + architecture diagram)
-2. **Routing decision rules** (1–2 paragraphs + decision table) — this is the core contribution
-3. **Baseline descriptions** (1 paragraph each — what each tests, why it's fair)
-4. **Ablation design** (1 paragraph — what each ablation isolates)
-5. **Dataset construction** (2 paragraphs — sources, mapping, filtering, annotation)
-6. **Evaluation protocol** (1–2 paragraphs — same test set, same metrics, metric formulas)
+## Results Narrative
 
-### 21.3 How to Write the Results Section
+1. Lead with Table 1 and routing accuracy.
+2. Explain compound and high-risk subgroup results.
+3. Use ablations to explain type/risk/capability contributions.
+4. Use statistics to describe confidence, not overclaim certainty.
+5. Use failure analysis to explain what still fails and why.
 
-1. **Lead with Table 1**: "The proposed manager achieves X% routing accuracy vs Y% for degree-based and Z% for direct LLM."
-2. **Ablation analysis (Table 2)**: "Removing type awareness reduces compound-case accuracy by X pp, confirming that type information contributes to routing quality."
-3. **Compound analysis (Table 3)**: "The improvement is concentrated in compound cases (X% vs Y%)."
-4. **Statistical backing (Table 9)**: "McNemar's test shows the difference is significant (p = X). Bootstrap 95% CI for routing accuracy: [X, Y]."
-5. **Failure analysis (Table 10)**: "The most common error type is Z, accounting for N% of routing errors."
+## Handling Negative or Mixed Results
 
-### 21.4 How to Handle Negative Results
+Negative results are acceptable if the analysis is honest:
 
-If the proposed manager does not clearly outperform all baselines:
-- Report all numbers honestly
-- Check **subgroup** results: compound subset, high-risk subset
-- Separate classification errors from routing errors (§12.3)
-- Use ablations to identify which signals help and which don't
-- Frame as contribution to understanding: "Our results show that [X] is necessary but [Y] is not sufficient for..."
-- The benchmark, taxonomy, and analysis framework remain valid contributions regardless
+- If proposed manager loses overall, say so.
+- If it only helps compound/high-risk cases, frame that as a scoped finding.
+- If ablations do not change performance, discuss redundancy or weak labels.
+- If classification is the bottleneck, distinguish that from routing-policy failure.
+
+## Required Limitations
+
+- text-only routing, not embodied execution
+- gold strategy subjectivity
+- hybrid dataset mapping
+- manual compound examples may contain artifacts
+- limited high-risk subgroup size
+- Gemini free-tier volatility and privacy constraints
+- no human-subject/user-trust evaluation
+- synthetic robustness, if used, is correlated and secondary
+
+## Coding LLM Checklist
+
+- [ ] Generate report-ready CSVs and figures from reproducible scripts.
+- [ ] Keep table names and metrics consistent with plan docs.
+- [ ] Store representative failure cases with human-editable analysis fields.
+- [ ] Do not generate final interpretation as unverified model prose.
+- [ ] Ensure README links artifacts to report tables.
+
+## Human Checklist
+
+- [ ] Write the final result interpretation yourself or review it line by line.
+- [ ] Confirm every claim points to a table, figure, or failure case.
+- [ ] Confirm limitations directly follow from observed data and methodology.
+- [ ] Confirm the conclusion answers the exact research question.
+- [ ] Confirm AI/tool usage is declared accurately.
+
+---
+**Previous:** [Timeline](20_timeline.md) | **Next:** [Risks and Mitigations](22_risks_mitigations.md)
 
 ---
 
@@ -1844,28 +1781,42 @@ If the proposed manager does not clearly outperform all baselines:
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| **Dataset too messy** | Medium | Start with manual examples you control. Time-box each mapper. Accept 170+ examples as minimum viable |
-| **Safety API not ready** | ~~High~~ **Low** | Safety API is now optional (§13). Primary experiment uses predicted risk levels. No blocking dependency |
-| **LLM output invalid / malformed** | Medium | `instructor` handles retries automatically. Schema validation at every stage. Conservative fallback. Log all failures |
-| **Results not better than baseline** | Medium | Acceptable for honours if discussed honestly. Ablations reveal component-level contributions. Compound subset may still show gains. Failure analysis becomes the secondary contribution |
-| **Time too short** | High | Minimum viable submission defined (§20). Phase 1 MVE gives working experiment by Week 2. Everything after is strengthening |
-| **Annotation inconsistency** | Medium | Operational decision rules (§4). Mandatory IAA (§5). Self-audit every 20 examples. Guidelines revision if κ < 0.75 |
-| **Overengineering** | Medium | No LangChain, no Docker, no MLflow, no agent coordination frameworks (§16). SFT fine-tuning of the local model is the core system, not an extension. |
-| **API costs** | Medium | SFT training and direct LLM baseline run on local HPC (free). To avoid high API costs for the 600-example synthetic validator (using Claude 3.5 Sonnet / GPT-4), we will host a robust local model (like Llama-3-70B-Instruct) on the HPC cluster for validation, keeping the OpenAI/Anthropic API budget to a safe ~$30–50 for minor development tests. |
-| **TEACh time sink** | Medium | TEACh is a MUST-priority dataset. Allocate dedicated time to complete the mapping for the multi-turn evaluation benchmark |
-| **Statistical non-significance** | Medium | Report honestly. Check subgroups. Discuss sample size limitations. 200 examples may not detect small effects — this is a known limitation at honours scale |
-| **IAA too low** | Medium | If κ < 0.75, revise guidelines, resolve disagreements, re-annotate. Report the process transparently |
+| Dataset too messy | Medium | Start with manual/dev examples, time-box mappers, document exclusions |
+| Annotation inconsistency | Medium | Binding guidelines, IAA, adjudication, human review |
+| Gold-risk leakage | High | final config guard, prompt audit, diagnostic-only gold mode |
+| Gemini throttling | Medium | caching, throttling, resumable runs, HPC fallback |
+| Gemini privacy constraints | Medium | no sensitive/private data in free-tier calls |
+| Direct baseline fallback | High | forbid heuristic fallback in final direct Gemini |
+| Degree baseline too weak | Medium | pre-declare scalar method and audit fairness |
+| Results not significant | Medium | report honestly, use subgroup/failure analysis |
+| TEACh time sink | Medium | keep small required sample: 30 total, 15 test |
+| Overengineering | Medium | no LangChain/agents/MLflow unless plan changes |
+| HPC unavailable | Low/Medium | primary Gemini path and cached reproduction remain local |
+| SFT overclaim | High | report SFT only if actually run and cached |
 
-> [!TIP]
-> **Critical framing**: Honours projects are evaluated on **research quality**, not just positive results. A well-analysed experiment with clear ablations, honest statistical reporting, and detailed failure categorisation scores better than inflated positive results with no analysis.
+## Open Questions to Resolve
+
+- Who is the second human annotator?
+- What are the active Gemini free-tier limits in AI Studio on the final run date?
+- Are HPC partition names and queue limits confirmed?
+- Is the external safety API available, or should it remain out of scope?
+- Is the 310-example target feasible, or is the documented fallback needed?
+
+## Coding LLM Checklist
+
+- [ ] Implement mitigations as checks, logs, or scripts wherever possible.
+- [ ] Add tests/config guards against gold-risk leakage in final runs.
+- [ ] Ensure Gemini cache/resume logic prevents losing progress on throttling.
+- [ ] Keep optional synthetic/HPC/SFT work out of required gates unless explicitly promoted.
+- [ ] Surface failures in result artifacts instead of silently hiding them.
+
+## Human Checklist
+
+- [ ] Review every risk mitigation before final evaluation starts.
+- [ ] Confirm Gemini free-tier privacy terms are acceptable for the data used.
+- [ ] Confirm second annotator availability and IAA plan.
+- [ ] Confirm HPC fallback details before relying on them.
+- [ ] Ensure limitations honestly cover any unresolved risks.
 
 ---
-
-## Open Questions
-
-> [!IMPORTANT]
-> 1. **LLM access**: Do you have an OpenAI API key (GPT-4o-mini recommended)? Or should the primary experiment use a different hosted model?
-> 2. **Second annotator**: Who will label the 30 IAA examples? A colleague, supervisor, or someone else?
-> 3. **HPC access**: Can you confirm the partition names (`bigbatch`/`batch`/`biggpu`)? Are there queue time constraints?
-> 4. **Colleague's safety API**: What is the current status? Is there a draft contract to review? (Not blocking — §13 makes it optional.)
-> 5. **Start date**: When does Semester 2 officially start? The timeline is numbered from Week 0 (now) through Week 13.
+**Previous:** [Report Alignment](21_report_alignment.md)
