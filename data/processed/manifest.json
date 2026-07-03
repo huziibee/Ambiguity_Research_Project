@@ -1,0 +1,34 @@
+{
+  "frozen_date": "2026-07-03",
+  "random_seed": 42,
+  "split_sizes": {
+    "dev_20": 20,
+    "dev_100": 100,
+    "train": 60,
+    "test": 150
+  },
+  "source_dataset_counts": {
+    "dev_100": {
+      "manual": 50,
+      "ambik": 17,
+      "sagc": 15,
+      "indirect_requests": 9,
+      "safe_agent_bench": 3,
+      "teach": 6
+    },
+    "train": {
+      "ambik": 16,
+      "sagc": 16,
+      "indirect_requests": 13,
+      "safe_agent_bench": 7,
+      "teach": 8
+    },
+    "test": {
+      "ambik": 47,
+      "sagc": 39,
+      "indirect_requests": 28,
+      "safe_agent_bench": 25,
+      "teach": 11
+    }
+  }
+}

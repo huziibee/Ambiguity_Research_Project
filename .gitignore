@@ -23,8 +23,6 @@ data/raw/teach_tatc/
 # Ignore interim mapping data
 data/interim/
 
-# Ignore processed data outputs except for dev_20
-data/processed/**/*.jsonl
-data/processed/**/*.json
-!data/processed/.gitkeep
-!data/processed/dev_20.jsonl
+# Track processed dataset splits and manifests (very small JSON/JSONL)
+!data/processed/*
+

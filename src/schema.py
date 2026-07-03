@@ -49,8 +49,8 @@ class ManagerInput(BaseModel):
     @field_validator("risk_mode")
     @classmethod
     def validate_risk_mode(cls, v: str) -> str:
-        if v not in ["gold", "mock", "api"]:
-            raise ValueError("risk_mode must be one of: gold, mock, api")
+        if v not in ["gold", "mock", "api", "predicted"]:
+            raise ValueError("risk_mode must be one of: gold, mock, api, predicted")
         return v
 
 class ManagerOutput(BaseModel):
