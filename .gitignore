@@ -26,3 +26,7 @@ data/interim/
 # Track processed dataset splits and manifests (very small JSON/JSONL)
 !data/processed/*
 
+# Ignore combined codebase review file
+codebase_combined.txt
+
+
