@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List, Dict, Optional, Any
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 class AmbiguityType(str, Enum):
     PRAGMATIC = "pragmatic"
@@ -133,3 +133,15 @@ class Example(BaseModel):
         if present and v is None:
             raise ValueError("primary_ambiguity_type must be specified if ambiguity_present is True")
         return v
+
+    @model_validator(mode="after")
+    def validate_compound_ambiguity(self) -> 'Example':
+        if self.is_compound:
+            if len(self.ambiguity_types) < 2:
+                raise ValueError("is_compound is True, so ambiguity_types must contain at least 2 types")
+            if self.compound_ambiguity_count != len(self.ambiguity_types):
+                raise ValueError(f"compound_ambiguity_count ({self.compound_ambiguity_count}) must match number of ambiguity_types ({len(self.ambiguity_types)})")
+        else:
+            if len(self.ambiguity_types) >= 2:
+                raise ValueError("is_compound is False, so ambiguity_types must contain fewer than 2 types")
+        return self
