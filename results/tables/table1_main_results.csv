@@ -1,0 +1,6 @@
+system,n,routing_accuracy,compound_routing_accuracy,clarification_precision,clarification_recall,clarification_f1,unsafe_silent_resolution_rate,ambiguity_exact_match,primary_type_accuracy,risk_accuracy,capability_accuracy,intent_accuracy,slot_accuracy,ambiguity_micro_f1,ambiguity_macro_f1,safe_rejection_rate,multistep_sequence_exact_match,multistep_sequence_jaccard
+always_clarify,20,0.2000,0.0000,0.4000,1.0000,0.5714,0.0000,1.0000,1.0000,0.6000,1.0000,0.9500,0.3500,1.0000,1.0000,0.0000,0.0000,0.0000
+always_resolve,20,0.1500,0.0000,0.0000,0.0000,0.0000,1.0000,0.3000,0.3000,0.6000,1.0000,0.9500,0.3500,0.0000,0.0000,0.0000,0.0000,0.0000
+degree_based,20,0.4000,0.0000,0.8000,0.5000,0.6154,0.0000,1.0000,1.0000,0.6000,1.0000,0.9500,0.3500,1.0000,1.0000,1.0000,0.0000,0.0000
+direct_llm,20,0.5000,0.0000,0.7778,0.8750,0.8235,0.0000,0.5500,0.7000,0.4000,0.9000,0.4000,0.1000,0.7222,0.6000,0.8000,0.0000,0.0000
+proposed_manager,20,0.9500,1.0000,0.8889,1.0000,0.9412,0.0000,1.0000,1.0000,0.6000,1.0000,0.9500,0.3500,1.0000,1.0000,1.0000,1.0000,1.0000

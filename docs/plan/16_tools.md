@@ -22,12 +22,12 @@ Use the smallest toolset that makes the experiment reproducible.
 | pytest | focused checks |
 | PyYAML or omegaconf | configs |
 | Gemini API client or LiteLLM | Gemini 3.1 Flash-Lite calls |
+| tenacity | retry/backoff |
 
 ## Recommended
 
 | Tool | Purpose |
 |------|---------|
-| tenacity | retry/backoff |
 | httpx | optional safety API |
 | matplotlib/seaborn | figures |
 | ruff | lint/format |

@@ -41,7 +41,7 @@ Break failures down by:
 | Output | Contents |
 |--------|----------|
 | `results/tables/failure_analysis.csv` | counts by error layer/category |
-| `results/failure_cases/representative_errors.jsonl` | 8-12 human-interpreted cases |
+| `results/failure_cases/representative_errors.json` | 8-12 human-interpreted cases |
 | Table 10 | report-ready summary |
 
 Representative cases must include command, source, gold labels, prediction, root cause, and human-written explanation.

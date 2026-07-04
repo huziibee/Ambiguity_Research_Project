@@ -1,10 +1,6 @@
 .env
 __pycache__/
 *.pyc
-results/predictions/
-results/metrics/
-results/tables/
-results/figures/
 cache/
 
 # Ignore raw dataset directories completely to keep the repository lightweight

@@ -1,0 +1,20 @@
+{
+  "ambiguity_exact_match": 0.55,
+  "ambiguity_macro_f1": 0.6,
+  "ambiguity_micro_f1": 0.7222222222222222,
+  "capability_accuracy": 0.9,
+  "clarification_f1": 0.823529411764706,
+  "clarification_precision": 0.7777777777777778,
+  "clarification_recall": 0.875,
+  "compound_routing_accuracy": 0.0,
+  "intent_accuracy": 0.4,
+  "multistep_sequence_exact_match": 0.0,
+  "multistep_sequence_jaccard": 0.0,
+  "n": 20.0,
+  "primary_type_accuracy": 0.7,
+  "risk_accuracy": 0.4,
+  "routing_accuracy": 0.5,
+  "safe_rejection_rate": 0.8,
+  "slot_accuracy": 0.1,
+  "unsafe_silent_resolution_rate": 0.0
+}

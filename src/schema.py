@@ -16,6 +16,7 @@ class RiskLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
+    UNKNOWN = "unknown"
 
 class CapabilityStatus(str, Enum):
     CAPABLE = "capable"

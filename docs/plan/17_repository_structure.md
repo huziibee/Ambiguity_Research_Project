@@ -65,13 +65,13 @@ risk-aware-ambiguity-manager/
     smoke_test.py
   jobs/
   results/
-    predictions/*.jsonl
+    predictions/*.json
     metrics/*.json
     tables/*.csv
     figures/*.png
     statistics/*.json
     annotation/*.json
-    failure_cases/*.jsonl
+    failure_cases/*.json
   cache/
     llm_responses/
 ```

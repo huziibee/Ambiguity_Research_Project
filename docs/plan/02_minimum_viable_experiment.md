@@ -42,7 +42,7 @@ python scripts/run_evaluation.py --config configs/dev_20.yaml
 
 The command must produce:
 
-- `results/smoke/dev_20/predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.jsonl`
+- `results/smoke/dev_20/predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json`
 - `results/smoke/dev_20/metrics/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json`
 - `results/smoke/dev_20/tables/table1_smoke_dev_20.csv`
 - zero schema validation errors

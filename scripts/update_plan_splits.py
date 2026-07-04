@@ -14,6 +14,10 @@ def update_text(text: str) -> str:
     text = re.sub(r'train\.jsonl', 'train.json', text)
     text = re.sub(r'test\.jsonl', 'test.json', text)
     text = re.sub(r'processed/\*\.jsonl', 'processed/*.json', text)
+    text = re.sub(r'predictions/\*\.jsonl', 'predictions/*.json', text)
+    text = re.sub(r'failure_cases/\*\.jsonl', 'failure_cases/*.json', text)
+    text = re.sub(r'predictions/\{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager\}\.jsonl', 'predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json', text)
+    text = re.sub(r'failure_cases/representative_errors\.jsonl', 'failure_cases/representative_errors.json', text)
     
     # 3. Replace count statistics in split descriptions
     # original: dev_80: 100, train: 60, test: 150

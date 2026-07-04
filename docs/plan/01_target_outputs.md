@@ -51,14 +51,14 @@ All final main-result metrics must be computed on the frozen `test` split of **8
 
 ```text
 results/
-  predictions/*.jsonl
+  predictions/*.json
   metrics/*.json
   tables/*.csv
   figures/*.png
   statistics/significance_results.json
   statistics/bootstrap_ci.json
   annotation/iaa_results.json
-  failure_cases/representative_errors.jsonl
+  failure_cases/representative_errors.json
 ```
 
 Each prediction row must include the example ID, system name, parsed `ManagerOutput`, raw LLM output when relevant, model ID, prompt hash, temperature, retry count, cache key, schema version, and fallback status.

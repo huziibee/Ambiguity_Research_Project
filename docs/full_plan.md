@@ -144,14 +144,14 @@ All final main-result metrics must be computed on the frozen `test` split of **8
 
 ```text
 results/
-  predictions/*.jsonl
+  predictions/*.json
   metrics/*.json
   tables/*.csv
   figures/*.png
   statistics/significance_results.json
   statistics/bootstrap_ci.json
   annotation/iaa_results.json
-  failure_cases/representative_errors.jsonl
+  failure_cases/representative_errors.json
 ```
 
 Each prediction row must include the example ID, system name, parsed `ManagerOutput`, raw LLM output when relevant, model ID, prompt hash, temperature, retry count, cache key, schema version, and fallback status.
@@ -219,7 +219,7 @@ python scripts/run_evaluation.py --config configs/dev_20.yaml
 
 The command must produce:
 
-- `results/smoke/dev_20/predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.jsonl`
+- `results/smoke/dev_20/predictions/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json`
 - `results/smoke/dev_20/metrics/{always_clarify,always_resolve,degree_based,direct_llm,proposed_manager}.json`
 - `results/smoke/dev_20/tables/table1_smoke_dev_20.csv`
 - zero schema validation errors
@@ -1158,7 +1158,7 @@ Break failures down by:
 | Output | Contents |
 |--------|----------|
 | `results/tables/failure_analysis.csv` | counts by error layer/category |
-| `results/failure_cases/representative_errors.jsonl` | 8-12 human-interpreted cases |
+| `results/failure_cases/representative_errors.json` | 8-12 human-interpreted cases |
 | Table 10 | report-ready summary |
 
 Representative cases must include command, source, gold labels, prediction, root cause, and human-written explanation.
@@ -1365,12 +1365,12 @@ Use the smallest toolset that makes the experiment reproducible.
 | pytest | focused checks |
 | PyYAML or omegaconf | configs |
 | Gemini API client or LiteLLM | Gemini 3.1 Flash-Lite calls |
+| tenacity | retry/backoff |
 
 ## Recommended
 
 | Tool | Purpose |
 |------|---------|
-| tenacity | retry/backoff |
 | httpx | optional safety API |
 | matplotlib/seaborn | figures |
 | ruff | lint/format |
@@ -1467,13 +1467,13 @@ risk-aware-ambiguity-manager/
     smoke_test.py
   jobs/
   results/
-    predictions/*.jsonl
+    predictions/*.json
     metrics/*.json
     tables/*.csv
     figures/*.png
     statistics/*.json
     annotation/*.json
-    failure_cases/*.jsonl
+    failure_cases/*.json
   cache/
     llm_responses/
 ```

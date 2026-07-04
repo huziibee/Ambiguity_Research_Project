@@ -5,6 +5,7 @@ import time
 from typing import Any, Dict, Optional
 import litellm
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -13,6 +14,17 @@ from src.schema import ManagerInput, ManagerOutput
 from src.baselines.ollama_llm import OUTPUT_SCHEMA, _prompt, _parse_output
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "cache", "llm_responses")
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    reraise=True
+)
+def _completion_with_backoff(**kwargs):
+    """
+    Wrap litellm completion calls in exponential backoff retries to handle rate limiting.
+    """
+    return litellm.completion(**kwargs)
 
 def llm_predict(input_data: ManagerInput) -> Optional[ManagerOutput]:
     backend = os.environ.get("DIRECT_LLM_BACKEND", "").lower().strip()
@@ -62,8 +74,8 @@ def llm_predict(input_data: ManagerInput) -> Optional[ManagerOutput]:
         time.sleep(2.0)
         
         try:
-            # Call litellm completion with JSON output format and retries
-            response = litellm.completion(
+            # Call litellm completion wrapped with tenacity exponential backoff
+            response = _completion_with_backoff(
                 model=model,
                 messages=[
                     {
@@ -76,8 +88,7 @@ def llm_predict(input_data: ManagerInput) -> Optional[ManagerOutput]:
                     "type": "json_object",
                     "response_schema": OUTPUT_SCHEMA
                 },
-                temperature=0.0,
-                num_retries=5
+                temperature=0.0
             )
             raw_content = response.choices[0].message.content
             if not raw_content:
@@ -96,7 +107,7 @@ def llm_predict(input_data: ManagerInput) -> Optional[ManagerOutput]:
                     
             return _parse_output(parsed_json, input_data)
         except Exception as e:
-            print(f"[LITELLM ERROR] Model {model} failed: {e}")
-            return None
+            print(f"[LITELLM ERROR] Model {model} failed after retries: {e}")
+            raise e
 
     return None

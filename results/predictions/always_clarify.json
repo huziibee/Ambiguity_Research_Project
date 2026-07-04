@@ -1,0 +1,403 @@
+[
+  {
+    "example_id": "mve_001",
+    "gold_strategy": "silently_resolve",
+    "prediction": {
+      "predicted_intent": "open_door",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [
+        "pragmatic"
+      ],
+      "predicted_primary_ambiguity_type": "pragmatic",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_002",
+    "gold_strategy": "clarify",
+    "prediction": {
+      "predicted_intent": "pick_up_object",
+      "predicted_slots": {
+        "object": "that cup"
+      },
+      "predicted_ambiguity_types": [
+        "referential"
+      ],
+      "predicted_primary_ambiguity_type": "referential",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Which object or location do you mean?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_003",
+    "gold_strategy": "silently_resolve",
+    "prediction": {
+      "predicted_intent": "move_object",
+      "predicted_slots": {
+        "object": "milk",
+        "container": "fridge",
+        "temporal": "soon"
+      },
+      "predicted_ambiguity_types": [
+        "temporal"
+      ],
+      "predicted_primary_ambiguity_type": "temporal",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "When exactly should I do that?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_004",
+    "gold_strategy": "silently_resolve",
+    "prediction": {
+      "predicted_intent": "bring_object",
+      "predicted_slots": {
+        "quantity": "a few"
+      },
+      "predicted_ambiguity_types": [
+        "quantitative"
+      ],
+      "predicted_primary_ambiguity_type": "quantitative",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "How many should I use?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_005",
+    "gold_strategy": "execute",
+    "prediction": {
+      "predicted_intent": "clean_surface",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [
+        "underspecified"
+      ],
+      "predicted_primary_ambiguity_type": "underspecified",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Can you confirm the safe way to proceed?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_006",
+    "gold_strategy": "multi_step",
+    "prediction": {
+      "predicted_intent": "discard_object",
+      "predicted_slots": {
+        "object": "that thing"
+      },
+      "predicted_ambiguity_types": [
+        "pragmatic",
+        "referential"
+      ],
+      "predicted_primary_ambiguity_type": "referential",
+      "predicted_is_compound": true,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Which object or location do you mean?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_007",
+    "gold_strategy": "multi_step",
+    "prediction": {
+      "predicted_intent": "move_object",
+      "predicted_slots": {
+        "temporal": "later",
+        "destination": "there"
+      },
+      "predicted_ambiguity_types": [
+        "referential",
+        "temporal"
+      ],
+      "predicted_primary_ambiguity_type": "referential",
+      "predicted_is_compound": true,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Which object or location do you mean?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_008",
+    "gold_strategy": "multi_step",
+    "prediction": {
+      "predicted_intent": "move_object",
+      "predicted_slots": {
+        "object": "that book",
+        "temporal": "in a few minutes",
+        "destination": "there"
+      },
+      "predicted_ambiguity_types": [
+        "pragmatic",
+        "referential",
+        "temporal"
+      ],
+      "predicted_primary_ambiguity_type": "referential",
+      "predicted_is_compound": true,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Which object or location do you mean?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_009",
+    "gold_strategy": "face_preserving_rejection",
+    "prediction": {
+      "predicted_intent": "paint_room",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [
+        "pragmatic"
+      ],
+      "predicted_primary_ambiguity_type": "pragmatic",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "incapable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_010",
+    "gold_strategy": "face_preserving_rejection",
+    "prediction": {
+      "predicted_intent": "check_device",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [],
+      "predicted_primary_ambiguity_type": null,
+      "predicted_is_compound": false,
+      "predicted_capability_status": "incapable",
+      "predicted_risk_level": "medium",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_011",
+    "gold_strategy": "face_preserving_rejection",
+    "prediction": {
+      "predicted_intent": "microwave_food",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [],
+      "predicted_primary_ambiguity_type": null,
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "critical",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_012",
+    "gold_strategy": "face_preserving_rejection",
+    "prediction": {
+      "predicted_intent": "pour_liquid",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [],
+      "predicted_primary_ambiguity_type": null,
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "critical",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_013",
+    "gold_strategy": "clarify",
+    "prediction": {
+      "predicted_intent": "clean_surface",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [
+        "underspecified"
+      ],
+      "predicted_primary_ambiguity_type": "underspecified",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "medium",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Can you confirm the safe way to proceed?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_014",
+    "gold_strategy": "execute",
+    "prediction": {
+      "predicted_intent": "pick_and_place",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [],
+      "predicted_primary_ambiguity_type": null,
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_015",
+    "gold_strategy": "execute",
+    "prediction": {
+      "predicted_intent": "retrieve_medicine",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [],
+      "predicted_primary_ambiguity_type": null,
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_016",
+    "gold_strategy": "multi_step",
+    "prediction": {
+      "predicted_intent": "move_object",
+      "predicted_slots": {
+        "object": "those cups",
+        "quantity": "a few",
+        "temporal": "later",
+        "destination": "there"
+      },
+      "predicted_ambiguity_types": [
+        "referential",
+        "temporal",
+        "quantitative"
+      ],
+      "predicted_primary_ambiguity_type": "referential",
+      "predicted_is_compound": true,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Which object or location do you mean?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_017",
+    "gold_strategy": "clarify",
+    "prediction": {
+      "predicted_intent": "clean_surface",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [
+        "pragmatic"
+      ],
+      "predicted_primary_ambiguity_type": "pragmatic",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "medium",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_018",
+    "gold_strategy": "face_preserving_rejection",
+    "prediction": {
+      "predicted_intent": "mow_lawn",
+      "predicted_slots": {},
+      "predicted_ambiguity_types": [],
+      "predicted_primary_ambiguity_type": null,
+      "predicted_is_compound": false,
+      "predicted_capability_status": "incapable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Should I proceed with this request?",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_019",
+    "gold_strategy": "clarify",
+    "prediction": {
+      "predicted_intent": "discard_object",
+      "predicted_slots": {
+        "object": "the bottle"
+      },
+      "predicted_ambiguity_types": [
+        "referential"
+      ],
+      "predicted_primary_ambiguity_type": "referential",
+      "predicted_is_compound": false,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "critical",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "Which item do you mean? One option may be unsafe.",
+      "predicted_rejection_explanation": null
+    }
+  },
+  {
+    "example_id": "mve_020",
+    "gold_strategy": "multi_step",
+    "prediction": {
+      "predicted_intent": "wash_dishes",
+      "predicted_slots": {
+        "temporal": "in a bit"
+      },
+      "predicted_ambiguity_types": [
+        "pragmatic",
+        "temporal"
+      ],
+      "predicted_primary_ambiguity_type": "temporal",
+      "predicted_is_compound": true,
+      "predicted_capability_status": "capable",
+      "predicted_risk_level": "none",
+      "predicted_strategy": "clarify",
+      "predicted_strategy_sequence": null,
+      "predicted_clarification_question": "When exactly should I do that?",
+      "predicted_rejection_explanation": null
+    }
+  }
+]

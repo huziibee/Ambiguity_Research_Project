@@ -9,7 +9,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from scripts.run_evaluation import build_systems, main as run_main
 from src.data.loader import load_examples
-from src.evaluation.runner import example_to_input, run_system
+from src.evaluation.runner import build_manager_input, run_system
 from src.schema import ManagerOutput, RoutingStrategy
 
 
@@ -29,12 +29,12 @@ def main() -> None:
 
     systems = build_systems()
     for system in systems:
-        one = system.predict(example_to_input(examples[0]))
+        one = system.predict(build_manager_input(examples[0], risk_mode="gold"))
         ManagerOutput(**one.model_dump())
         full = run_system(system, examples)
         assert len(full) == 20
 
-    proposed = systems[-1].predict(example_to_input(next(ex for ex in examples if ex.is_compound)))
+    proposed = systems[-1].predict(build_manager_input(next(ex for ex in examples if ex.is_compound), risk_mode="gold"))
     assert proposed.predicted_strategy == RoutingStrategy.MULTI_STEP
     assert proposed.predicted_strategy_sequence
 
