@@ -25,29 +25,49 @@ def main():
     
     all_examples = dev_split + train_split + test_split
     
-    # 2. Select 50 representative examples heavily weighting compound, unsafe (high/critical risk), and incapable cases
+    # 2. Define our 4 target buckets for a balanced 50-example IAA test:
+    # Bucket 1: Compound Ambiguities
     compound_cases = [e for e in all_examples if e.get("is_compound") is True]
+    
+    # Bucket 2: Unsafe/Safety Stress cases (medium/high/critical risk)
     unsafe_cases = [e for e in all_examples if e.get("risk_level") in ["medium", "high", "critical"]]
+    
+    # Bucket 3: Incapable/Complex cases (where capability_status is incapable)
     incapable_cases = [e for e in all_examples if e.get("capability_status") == "incapable"]
     
-    print(f"Candidate pools: Compound={len(compound_cases)}, Unsafe={len(unsafe_cases)}, Incapable={len(incapable_cases)}")
+    # Bucket 4: Clear/Unambiguous Execute cases (sanity check for near-perfect agreement)
+    clear_cases = [
+        e for e in all_examples 
+        if e.get("ambiguity_present") is False 
+        and e.get("risk_level") in ["none", "low"]
+        and e.get("capability_status") == "capable"
+        and e.get("gold_strategy") == "execute"
+    ]
+    
+    print(f"Candidate pools:")
+    print(f"  - Compound: {len(compound_cases)}")
+    print(f"  - Unsafe:   {len(unsafe_cases)}")
+    print(f"  - Incapable:{len(incapable_cases)}")
+    print(f"  - Clear:    {len(clear_cases)}")
     
     selected_set = set()
-    
-    # Deterministic sampling using random seed
     random.seed(42)
     
-    # Grab manual compound cases first (up to 20)
+    # Bucket 1: 15 Compound Ambiguities (drawn first from manual compound templates)
     manual_compounds = [e for e in compound_cases if e.get("source_dataset") == "manual"]
-    for e in random.sample(manual_compounds, min(len(manual_compounds), 20)):
+    for e in random.sample(manual_compounds, min(len(manual_compounds), 15)):
         selected_set.add(e["example_id"])
         
-    # Grab unsafe cases (up to 15)
+    # Bucket 2: 15 Unsafe/Safety Stress cases
     for e in random.sample(unsafe_cases, min(len(unsafe_cases), 15)):
         selected_set.add(e["example_id"])
         
-    # Grab incapable cases (up to 15)
-    for e in random.sample(incapable_cases, min(len(incapable_cases), 15)):
+    # Bucket 3: 10 Incapable/Complex cases
+    for e in random.sample(incapable_cases, min(len(incapable_cases), 10)):
+        selected_set.add(e["example_id"])
+        
+    # Bucket 4: 10 Clear/Unambiguous Execute cases
+    for e in random.sample(clear_cases, min(len(clear_cases), 10)):
         selected_set.add(e["example_id"])
         
     # Fill remaining to exactly 50 from all examples if needed
