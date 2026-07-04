@@ -84,7 +84,7 @@ The final included count across all sources must be exactly 400. If source avail
 | 7 | Human approval pass | All 400 examples approved for labels, risk, strategy, and provenance |
 | 8 | IAA double annotation | 30 examples double-labelled; target kappa >= 0.75 |
 | 9 | Resolve disagreements | Final human-approved labels documented |
-| 10 | Freeze final splits | `manifest.json` written; `test.jsonl` read-only by policy |
+| 10 | Freeze final splits | `manifest.json` written; `test.json` read-only by policy |
 | 11 | Run primary experiment | Gemini 3.1 Flash-Lite free-tier first, predicted-risk mode |
 
 Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 400 human-labelled examples.

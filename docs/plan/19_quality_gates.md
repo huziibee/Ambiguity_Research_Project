@@ -11,7 +11,7 @@ No final claims until these gates pass.
 | # | Gate | Verification |
 |---|------|--------------|
 | 1 | `dev_20` smoke test passes | `python scripts/smoke_test.py` |
-| 2 | schema validation passes | `python scripts/validate_dataset.py data/processed/*.jsonl` |
+| 2 | schema validation passes | `python scripts/validate_dataset.py data/processed/*.json` |
 | 3 | `risk_mode="predicted"` supported | schema/config tests |
 | 4 | no gold-risk leakage in primary run | config/unit test |
 | 5 | manual compound validation complete | human sign-off |

@@ -123,9 +123,9 @@ Each included example must pass human approval before it can enter `dev_80`, `tr
 
 LLM assistance may be used to draft candidate labels, but LLM output is not a gold label until a human approves it.
 
-### 4.4 Label Freeze Protocol for `test.jsonl`
+### 4.4 Label Freeze Protocol for `test.json`
 
-Once `test.jsonl` is created and approved:
+Once `test.json` is created and approved:
 
 1. Write `data/processed/manifest.json`:
 
@@ -138,11 +138,11 @@ Once `test.jsonl` is created and approved:
      "primary_backend": "gemini-3.1-flash-lite-free-tier",
      "final_evaluation_risk_mode": "predicted",
      "git_commit_sha": "abc123def456...",
-     "warning": "test.jsonl must not be edited after frozen_date. Corrections go in errata.md."
+     "warning": "test.json must not be edited after frozen_date. Corrections go in errata.md."
    }
    ```
 
-2. No edits to `test.jsonl` after the freeze date.
+2. No edits to `test.json` after the freeze date.
 3. Any discovered labelling errors go in `data/processed/errata.md` and the report limitations section.
 4. Development and tuning use only `dev_20`, `dev_80`, and optionally `train`.
 5. Final evaluation uses the frozen `test` split with predicted risk.
@@ -161,7 +161,7 @@ Once `test.jsonl` is created and approved:
 - [ ] Check conservative risk calibration for all medium, high, and critical examples.
 - [ ] Verify that gold strategies follow the priority rules rather than personal preference.
 - [ ] Review all `multi_step` sequences for correct ordering.
-- [ ] Confirm that test-set corrections after freeze are documented in errata instead of editing `test.jsonl`.
+- [ ] Confirm that test-set corrections after freeze are documented in errata instead of editing `test.json`.
 
 ---
 

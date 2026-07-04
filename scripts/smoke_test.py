@@ -13,7 +13,7 @@ from src.evaluation.runner import example_to_input, run_system
 from src.schema import ManagerOutput, RoutingStrategy
 
 
-DEV_PATH = PROJECT_ROOT / "data" / "processed" / "dev_20.jsonl"
+DEV_PATH = PROJECT_ROOT / "data" / "processed" / "dev_20.json"
 TABLE_PATH = PROJECT_ROOT / "results" / "tables" / "table1_main_results.csv"
 
 

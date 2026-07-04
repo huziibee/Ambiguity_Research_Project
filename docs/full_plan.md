@@ -194,8 +194,8 @@ Phase 1 produces a working smoke-test experiment on 20 examples. This must be bu
 | Deliverable | Concrete requirement |
 |-------------|----------------------|
 | `src/schema.py` | Pydantic v2 models for `Example`, `ManagerInput`, and `ManagerOutput`, including `risk_mode="predicted"` |
-| `data/processed/dev_80.jsonl` | 80 human-approved development examples |
-| `data/processed/dev_20.jsonl` | 20-example subset of `dev_80`, validated against schema and covering all five routing strategies |
+| `data/processed/dev_80.json` | 80 human-approved development examples |
+| `data/processed/dev_20.json` | 20-example subset of `dev_80`, validated against schema and covering all five routing strategies |
 | 4 baselines | `always_clarify`, `always_resolve`, `degree_based`, `direct_llm` each produce valid `ManagerOutput` |
 | Proposed router | Gemini 3.1 Flash-Lite-compatible staged pipeline and deterministic router produce valid `ManagerOutput` |
 | `src/evaluation/metrics.py` | Computes strict primary and supporting metrics |
@@ -462,9 +462,9 @@ Each included example must pass human approval before it can enter `dev_80`, `tr
 
 LLM assistance may be used to draft candidate labels, but LLM output is not a gold label until a human approves it.
 
-### 4.4 Label Freeze Protocol for `test.jsonl`
+### 4.4 Label Freeze Protocol for `test.json`
 
-Once `test.jsonl` is created and approved:
+Once `test.json` is created and approved:
 
 1. Write `data/processed/manifest.json`:
 
@@ -477,11 +477,11 @@ Once `test.jsonl` is created and approved:
      "primary_backend": "gemini-3.1-flash-lite-free-tier",
      "final_evaluation_risk_mode": "predicted",
      "git_commit_sha": "abc123def456...",
-     "warning": "test.jsonl must not be edited after frozen_date. Corrections go in errata.md."
+     "warning": "test.json must not be edited after frozen_date. Corrections go in errata.md."
    }
    ```
 
-2. No edits to `test.jsonl` after the freeze date.
+2. No edits to `test.json` after the freeze date.
 3. Any discovered labelling errors go in `data/processed/errata.md` and the report limitations section.
 4. Development and tuning use only `dev_20`, `dev_80`, and optionally `train`.
 5. Final evaluation uses the frozen `test` split with predicted risk.
@@ -500,7 +500,7 @@ Once `test.jsonl` is created and approved:
 - [ ] Check conservative risk calibration for all medium, high, and critical examples.
 - [ ] Verify that gold strategies follow the priority rules rather than personal preference.
 - [ ] Review all `multi_step` sequences for correct ordering.
-- [ ] Confirm that test-set corrections after freeze are documented in errata instead of editing `test.jsonl`.
+- [ ] Confirm that test-set corrections after freeze are documented in errata instead of editing `test.json`.
 
 ---
 
@@ -584,7 +584,7 @@ After computing IAA:
 3. If rules resolve the disagreement, use the rule-consistent label.
 4. If rules remain ambiguous, discuss with a supervisor or second reviewer and document the decision.
 5. Update the annotation guidelines if a new edge case is discovered.
-6. Do not freeze `test.jsonl` until disagreement resolution is complete.
+6. Do not freeze `test.json` until disagreement resolution is complete.
 
 ## Coding LLM Checklist
 
@@ -600,7 +600,7 @@ After computing IAA:
 - [ ] Ensure the second annotator receives no first-annotator labels.
 - [ ] Review every disagreement and document the final human-approved resolution.
 - [ ] Confirm that below-target agreement triggers guideline revision or a clearly reported limitation.
-- [ ] Verify that `test.jsonl` is not frozen until IAA and disagreement resolution are complete.
+- [ ] Verify that `test.json` is not frozen until IAA and disagreement resolution are complete.
 
 ---
 
@@ -794,7 +794,7 @@ The final included count across all sources must be exactly 400. If source avail
 | 7 | Human approval pass | All 400 examples approved for labels, risk, strategy, and provenance |
 | 8 | IAA double annotation | 30 examples double-labelled; target kappa >= 0.75 |
 | 9 | Resolve disagreements | Final human-approved labels documented |
-| 10 | Freeze final splits | `manifest.json` written; `test.jsonl` read-only by policy |
+| 10 | Freeze final splits | `manifest.json` written; `test.json` read-only by policy |
 | 11 | Run primary experiment | Gemini 3.1 Flash-Lite free-tier first, predicted-risk mode |
 
 Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 400 human-labelled examples.
@@ -871,7 +871,7 @@ The final `test` evaluation must:
 
 ## 8. Systems Under Comparison
 
-All systems consume the same `ManagerInput` and produce validated `ManagerOutput`. Final results use the frozen `test.jsonl`, predicted risk, cached predictions, and identical metric functions.
+All systems consume the same `ManagerInput` and produce validated `ManagerOutput`. Final results use the frozen `test.json`, predicted risk, cached predictions, and identical metric functions.
 
 ## Systems
 
@@ -1309,7 +1309,7 @@ If approved:
 
 - Use a small open-source instruct model compatible with available HPC GPUs.
 - Use LoRA/PEFT rather than full fine-tuning.
-- Train only on `train.jsonl`.
+- Train only on `train.json`.
 - Never train on `dev_80` or `test`.
 - Save training config, seed, checkpoint, prompt template, and predictions.
 
@@ -1427,10 +1427,10 @@ risk-aware-ambiguity-manager/
     interim/*_mapped.jsonl
     interim/filtering_log.jsonl
     manual/compound_50.jsonl
-    processed/dev_20.jsonl
-    processed/dev_80.jsonl
-    processed/train.jsonl
-    processed/test.jsonl
+    processed/dev_20.json
+    processed/dev_80.json
+    processed/train.json
+    processed/test.json
     processed/manifest.json
     processed/errata.md
     annotation/annotator_a.jsonl
@@ -1491,7 +1491,7 @@ TEACh is included because the proposal names it. Local LLM/HPC files are allowed
 ## Human Checklist
 
 - [ ] Confirm data provenance and license notes exist under `data/raw/`.
-- [ ] Confirm `test.jsonl` and `manifest.json` are present before final evaluation.
+- [ ] Confirm `test.json` and `manifest.json` are present before final evaluation.
 - [ ] Confirm cached predictions correspond to the frozen manifest.
 - [ ] Confirm optional outputs are clearly labelled.
 - [ ] Confirm repository structure is clean before submission.
@@ -1549,7 +1549,7 @@ This must regenerate final metrics and tables from cached predictions without li
 ## Human Checklist
 
 - [ ] Run the one-command cached reproduction before submission.
-- [ ] Verify cached predictions correspond to the frozen `test.jsonl` hash.
+- [ ] Verify cached predictions correspond to the frozen `test.json` hash.
 - [ ] Confirm API keys are not committed.
 - [ ] Confirm repo access is public or granted to supervisors/examiner.
 - [ ] Confirm the AI declaration matches actual Gemini/Codex usage.
@@ -1566,7 +1566,7 @@ No final claims until these gates pass.
 | # | Gate | Verification |
 |---|------|--------------|
 | 1 | `dev_20` smoke test passes | `python scripts/smoke_test.py` |
-| 2 | schema validation passes | `python scripts/validate_dataset.py data/processed/*.jsonl` |
+| 2 | schema validation passes | `python scripts/validate_dataset.py data/processed/*.json` |
 | 3 | `risk_mode="predicted"` supported | schema/config tests |
 | 4 | no gold-risk leakage in primary run | config/unit test |
 | 5 | manual compound validation complete | human sign-off |

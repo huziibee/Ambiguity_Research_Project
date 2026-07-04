@@ -80,7 +80,7 @@ After computing IAA:
 3. If rules resolve the disagreement, use the rule-consistent label.
 4. If rules remain ambiguous, discuss with a supervisor or second reviewer and document the decision.
 5. Update the annotation guidelines if a new edge case is discovered.
-6. Do not freeze `test.jsonl` until disagreement resolution is complete.
+6. Do not freeze `test.json` until disagreement resolution is complete.
 
 ## Coding LLM Checklist
 
@@ -96,7 +96,7 @@ After computing IAA:
 - [ ] Ensure the second annotator receives no first-annotator labels.
 - [ ] Review every disagreement and document the final human-approved resolution.
 - [ ] Confirm that below-target agreement triggers guideline revision or a clearly reported limitation.
-- [ ] Verify that `test.jsonl` is not frozen until IAA and disagreement resolution are complete.
+- [ ] Verify that `test.json` is not frozen until IAA and disagreement resolution are complete.
 
 ---
 

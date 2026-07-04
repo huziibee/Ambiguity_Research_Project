@@ -6,7 +6,7 @@ description: "All systems, baseline definitions, fairness requirements, and fina
 
 ## 8. Systems Under Comparison
 
-All systems consume the same `ManagerInput` and produce validated `ManagerOutput`. Final results use the frozen `test.jsonl`, predicted risk, cached predictions, and identical metric functions.
+All systems consume the same `ManagerInput` and produce validated `ManagerOutput`. Final results use the frozen `test.json`, predicted risk, cached predictions, and identical metric functions.
 
 ## Systems
 

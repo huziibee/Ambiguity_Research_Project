@@ -25,10 +25,10 @@ risk-aware-ambiguity-manager/
     interim/*_mapped.jsonl
     interim/filtering_log.jsonl
     manual/compound_50.jsonl
-    processed/dev_20.jsonl
-    processed/dev_80.jsonl
-    processed/train.jsonl
-    processed/test.jsonl
+    processed/dev_20.json
+    processed/dev_80.json
+    processed/train.json
+    processed/test.json
     processed/manifest.json
     processed/errata.md
     annotation/annotator_a.jsonl
@@ -89,7 +89,7 @@ TEACh is included because the proposal names it. Local LLM/HPC files are allowed
 ## Human Checklist
 
 - [ ] Confirm data provenance and license notes exist under `data/raw/`.
-- [ ] Confirm `test.jsonl` and `manifest.json` are present before final evaluation.
+- [ ] Confirm `test.json` and `manifest.json` are present before final evaluation.
 - [ ] Confirm cached predictions correspond to the frozen manifest.
 - [ ] Confirm optional outputs are clearly labelled.
 - [ ] Confirm repository structure is clean before submission.

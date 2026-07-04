@@ -117,7 +117,7 @@ def main():
     
     # Set split attribute on each record and validate through Example schema
     def prepare_and_write(examples_list, split_name, output_path):
-        validated_lines = []
+        validated_examples = []
         for i, ex_dict in enumerate(examples_list):
             ex_dict["split"] = split_name
             # Re-generate unique ID if needed, or keep original
@@ -128,20 +128,19 @@ def main():
                 
             try:
                 ex = Example(**ex_dict)
-                validated_lines.append(ex.model_dump_json())
+                validated_examples.append(ex.model_dump())
             except Exception as e:
                 print(f"[ERROR] Validation failed for {ex_dict.get('example_id')}: {e}")
                 raise e
                 
         with open(output_path, "w", encoding="utf-8") as f:
-            for line in validated_lines:
-                f.write(line + "\n")
-        print(f"Wrote {len(validated_lines)} validated examples to {output_path}")
+            json.dump(validated_examples, f, indent=2, ensure_ascii=False)
+        print(f"Wrote {len(validated_examples)} validated examples to {output_path}")
         
-    prepare_and_write(dev_20, "dev_20", processed_dir / "dev_20.jsonl")
-    prepare_and_write(dev_split, "dev_80", processed_dir / "dev_80.jsonl")
-    prepare_and_write(train_split, "train", processed_dir / "train.jsonl")
-    prepare_and_write(test_split, "test", processed_dir / "test.jsonl")
+    prepare_and_write(dev_20, "dev_20", processed_dir / "dev_20.json")
+    prepare_and_write(dev_split, "dev_80", processed_dir / "dev_80.json")
+    prepare_and_write(train_split, "train", processed_dir / "train.json")
+    prepare_and_write(test_split, "test", processed_dir / "test.json")
     
     # 5. Write manifest.json
     manifest = {

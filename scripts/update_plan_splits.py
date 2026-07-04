@@ -4,11 +4,18 @@ from pathlib import Path
 
 def update_text(text: str) -> str:
     # 1. Replace dev_100 references with dev_80
-    text = re.sub(r'dev_100\.jsonl', 'dev_80.jsonl', text)
+    text = re.sub(r'dev_100\.jsonl', 'dev_80.json', text)
     text = re.sub(r'dev_100=100', 'dev_80=80', text)
     text = re.sub(r'dev_100', 'dev_80', text)
     
-    # 2. Replace count statistics in split descriptions
+    # 2. Replace jsonl extension with json for processed splits
+    text = re.sub(r'dev_80\.jsonl', 'dev_80.json', text)
+    text = re.sub(r'dev_20\.jsonl', 'dev_20.json', text)
+    text = re.sub(r'train\.jsonl', 'train.json', text)
+    text = re.sub(r'test\.jsonl', 'test.json', text)
+    text = re.sub(r'processed/\*\.jsonl', 'processed/*.json', text)
+    
+    # 3. Replace count statistics in split descriptions
     # original: dev_80: 100, train: 60, test: 150
     # new: dev_80: 80, train: 240, test: 80
     text = re.sub(r'dev_80\s*\|\s*100\b', 'dev_80 | 80', text)
@@ -35,7 +42,7 @@ def update_text(text: str) -> str:
     text = re.sub(r'frozen 150-example test set minimum', 'frozen 80-example test set minimum', text)
     text = re.sub(r'150-example test set', '80-example test set', text)
     
-    # 3. Replace total counts: 310 -> 400
+    # 4. Replace total counts: 310 -> 400
     text = re.sub(r'310 unique human-labelled examples', '400 unique human-labelled examples', text)
     text = re.sub(r'310 unique human-approved examples', '400 unique human-approved examples', text)
     text = re.sub(r'310 unique human-labeled examples', '400 unique human-labeled examples', text)

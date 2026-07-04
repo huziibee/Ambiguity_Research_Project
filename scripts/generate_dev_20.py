@@ -11,7 +11,7 @@ from src.schema import Example
 
 INPUT_PATH = os.path.join(BASE_DIR, "data", "manual", "dev_20_raw.json")
 OUTPUT_DIR = os.path.join(BASE_DIR, "data", "processed")
-OUTPUT_PATH = os.path.join(OUTPUT_DIR, "dev_20.jsonl")
+OUTPUT_PATH = os.path.join(OUTPUT_DIR, "dev_20.json")
 
 def main():
     print(f"Creating output directory: {OUTPUT_DIR}...")
@@ -26,17 +26,18 @@ def main():
         
     print(f"Validating and writing {len(examples_data)} examples to {OUTPUT_PATH}...")
     
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-        for ex_dict in examples_data:
-            # Pydantic v2 validation
-            try:
-                ex = Example(**ex_dict)
-            except Exception as e:
-                print(f"[ERROR] Example {ex_dict['example_id']} failed validation: {e}")
-                raise e
+    validated_examples = []
+    for ex_dict in examples_data:
+        # Pydantic v2 validation
+        try:
+            ex = Example(**ex_dict)
+            validated_examples.append(ex.model_dump())
+        except Exception as e:
+            print(f"[ERROR] Example {ex_dict['example_id']} failed validation: {e}")
+            raise e
             
-            # Write JSON-serialized string per line
-            f.write(ex.model_dump_json() + "\n")
+    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(validated_examples, f, indent=2, ensure_ascii=False)
             
     print("MVE dev_20 dataset generated successfully!")
 

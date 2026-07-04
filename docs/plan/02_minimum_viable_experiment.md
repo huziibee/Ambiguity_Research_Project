@@ -17,8 +17,8 @@ Phase 1 produces a working smoke-test experiment on 20 examples. This must be bu
 | Deliverable | Concrete requirement |
 |-------------|----------------------|
 | `src/schema.py` | Pydantic v2 models for `Example`, `ManagerInput`, and `ManagerOutput`, including `risk_mode="predicted"` |
-| `data/processed/dev_80.jsonl` | 80 human-approved development examples |
-| `data/processed/dev_20.jsonl` | 20-example subset of `dev_80`, validated against schema and covering all five routing strategies |
+| `data/processed/dev_80.json` | 80 human-approved development examples |
+| `data/processed/dev_20.json` | 20-example subset of `dev_80`, validated against schema and covering all five routing strategies |
 | 4 baselines | `always_clarify`, `always_resolve`, `degree_based`, `direct_llm` each produce valid `ManagerOutput` |
 | Proposed router | Gemini 3.1 Flash-Lite-compatible staged pipeline and deterministic router produce valid `ManagerOutput` |
 | `src/evaluation/metrics.py` | Computes strict primary and supporting metrics |

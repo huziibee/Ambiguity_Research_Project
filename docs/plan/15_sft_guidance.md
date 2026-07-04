@@ -22,7 +22,7 @@ If approved:
 
 - Use a small open-source instruct model compatible with available HPC GPUs.
 - Use LoRA/PEFT rather than full fine-tuning.
-- Train only on `train.jsonl`.
+- Train only on `train.json`.
 - Never train on `dev_80` or `test`.
 - Save training config, seed, checkpoint, prompt template, and predictions.
 

@@ -52,7 +52,7 @@ This must regenerate final metrics and tables from cached predictions without li
 ## Human Checklist
 
 - [ ] Run the one-command cached reproduction before submission.
-- [ ] Verify cached predictions correspond to the frozen `test.jsonl` hash.
+- [ ] Verify cached predictions correspond to the frozen `test.json` hash.
 - [ ] Confirm API keys are not committed.
 - [ ] Confirm repo access is public or granted to supervisors/examiner.
 - [ ] Confirm the AI declaration matches actual Gemini/Codex usage.

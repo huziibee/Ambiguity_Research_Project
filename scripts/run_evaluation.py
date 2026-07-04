@@ -16,7 +16,7 @@ from src.evaluation.runner import run_evaluation
 from src.manager.pipeline import ProposedManager
 
 
-DEV_PATH = PROJECT_ROOT / "data" / "processed" / "dev_20.jsonl"
+DEV_PATH = PROJECT_ROOT / "data" / "processed" / "dev_20.json"
 RESULTS_DIR = PROJECT_ROOT / "results"
 
 
@@ -46,7 +46,7 @@ def main() -> None:
         "--data",
         type=str,
         default=str(DEV_PATH),
-        help="Path to the JSONL dataset containing evaluation examples."
+        help="Path to the JSON dataset containing evaluation examples."
     )
     args = parser.parse_args()
 
