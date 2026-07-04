@@ -83,12 +83,15 @@ def run_system(system: System, examples: Iterable[Example]) -> List[Prediction]:
 
 def write_predictions(path: Path, predictions: List[Prediction]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    import datetime
+    timestamp = datetime.datetime.now().isoformat()
     rows = []
     for example, output in predictions:
         rows.append({
             "example_id": example.example_id,
             "gold_strategy": example.gold_strategy.value,
             "prediction": output.model_dump(mode="json"),
+            "generated_at": timestamp
         })
     with path.open("w", encoding="utf-8") as f:
         json.dump(rows, f, indent=2, ensure_ascii=False)
@@ -96,8 +99,12 @@ def write_predictions(path: Path, predictions: List[Prediction]) -> None:
 
 def write_metrics(path: Path, metrics: Dict[str, float]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    import datetime
+    timestamp = datetime.datetime.now().isoformat()
+    metrics_copy = dict(metrics)
+    metrics_copy["generated_at"] = timestamp
     with path.open("w", encoding="utf-8") as f:
-        json.dump(metrics, f, indent=2, sort_keys=True)
+        json.dump(metrics_copy, f, indent=2, sort_keys=True)
         f.write("\n")
 
 

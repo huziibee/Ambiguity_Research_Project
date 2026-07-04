@@ -7,6 +7,7 @@
   "clarification_precision": 0.4,
   "clarification_recall": 1.0,
   "compound_routing_accuracy": 0.0,
+  "generated_at": "2026-07-04T08:23:41.885210",
   "intent_accuracy": 0.95,
   "multistep_sequence_exact_match": 0.0,
   "multistep_sequence_jaccard": 0.0,

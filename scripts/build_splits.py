@@ -143,8 +143,10 @@ def main():
     prepare_and_write(test_split, "test", processed_dir / "test.json")
     
     # 5. Write manifest.json
+    import datetime
     manifest = {
         "frozen_date": "2026-07-04",
+        "generated_at": datetime.datetime.now().isoformat(),
         "random_seed": 42,
         "split_sizes": {
             "dev_20": len(dev_20),

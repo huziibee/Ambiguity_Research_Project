@@ -14,7 +14,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_002",
@@ -33,7 +34,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_003",
@@ -54,7 +56,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_004",
@@ -73,7 +76,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_005",
@@ -90,7 +94,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_006",
@@ -109,7 +114,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_007",
@@ -129,7 +135,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_008",
@@ -150,7 +157,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_009",
@@ -167,7 +175,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_010",
@@ -184,7 +193,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_011",
@@ -201,7 +211,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_012",
@@ -218,7 +229,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_013",
@@ -235,7 +247,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_014",
@@ -252,7 +265,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_015",
@@ -269,7 +283,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_016",
@@ -291,7 +306,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_017",
@@ -308,7 +324,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_018",
@@ -325,7 +342,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_019",
@@ -344,7 +362,8 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   },
   {
     "example_id": "mve_020",
@@ -363,6 +382,7 @@
       "predicted_strategy_sequence": null,
       "predicted_clarification_question": null,
       "predicted_rejection_explanation": null
-    }
+    },
+    "generated_at": "2026-07-04T08:23:41.888281"
   }
 ]
