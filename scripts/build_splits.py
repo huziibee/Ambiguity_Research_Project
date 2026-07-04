@@ -31,59 +31,89 @@ def main():
         sys.exit(1)
         
     with open(manual_path, "r", encoding="utf-8") as f:
-        manual_examples = json.load(f)
-    print(f"Loaded {len(manual_examples)} manual compound examples.")
-    
-    # Split manual examples:
-    # First 20 are the MVE dev_20 examples
-    manual_mve = manual_examples[:20]
-    # Next 30 are other manual compound examples
-    manual_other = manual_examples[20:]
+        manual_pool = json.load(f)
+    print(f"Loaded {len(manual_pool)} manual compound examples.")
     
     # 2. Load candidates from other datasets
-    ambik_candidates = load_jsonl(interim_dir / "ambik_mapped.jsonl")
-    sagc_candidates = load_jsonl(interim_dir / "sagc_mapped.jsonl")
-    ir_candidates = load_jsonl(interim_dir / "indirect_requests_mapped.jsonl")
-    sab_candidates = load_jsonl(interim_dir / "safe_agent_bench_mapped.jsonl")
-    teach_candidates = load_jsonl(interim_dir / "teach_mapped.jsonl")
+    ambik_pool = load_jsonl(interim_dir / "ambik_mapped.jsonl")
+    sagc_pool = load_jsonl(interim_dir / "sagc_mapped.jsonl")
+    ir_pool = load_jsonl(interim_dir / "indirect_requests_mapped.jsonl")
+    sab_pool = load_jsonl(interim_dir / "safe_agent_bench_mapped.jsonl")
+    teach_pool = load_jsonl(interim_dir / "teach_mapped.jsonl")
     
-    print(f"Loaded candidates: AmbiK={len(ambik_candidates)}, SaGC={len(sagc_candidates)}, IndirectRequests={len(ir_candidates)}, SafeAgentBench={len(sab_candidates)}, TEACh={len(teach_candidates)}")
+    print(f"Loaded candidate pools: AmbiK={len(ambik_pool)}, SaGC={len(sagc_pool)}, IndirectRequests={len(ir_pool)}, SafeAgentBench={len(sab_pool)}, TEACh={len(teach_pool)}")
     
-    # Select target counts per dataset:
-    # AmbiK: 80
-    # SaGC: 70
-    # IndirectRequests: 50
-    # SafeAgentBench: 35
-    # TEACh: 25
+    # Define target counts for each dataset (totaling 400)
+    # Each target count must be divisible by 5 to ensure clean 60/20/20 splits:
+    # Train = 60%, Dev = 20%, Test = 20%
+    dataset_configs = {
+        "manual": {"pool": manual_pool, "total": 50, "train": 30, "dev": 10, "test": 10},
+        "ambik": {"pool": ambik_pool, "total": 110, "train": 66, "dev": 22, "test": 22},
+        "sagc": {"pool": sagc_pool, "total": 100, "train": 60, "dev": 20, "test": 20},
+        "indirect_requests": {"pool": ir_pool, "total": 70, "train": 42, "dev": 14, "test": 14},
+        "safe_agent_bench": {"pool": sab_pool, "total": 45, "train": 27, "dev": 9, "test": 9},
+        "teach": {"pool": teach_pool, "total": 25, "train": 15, "dev": 5, "test": 5}
+    }
+    
+    # Stratified split lists
+    train_split = []
+    dev_split = []
+    test_split = []
+    
+    # Tracking subset selections for dev_20
+    dev_20_manual = []
+    dev_20_non_manual = []
+    
+    # Fixed random seed for reproducibility
     random.seed(42)
     
-    selected_ambik = random.sample(ambik_candidates, 80)
-    selected_sagc = random.sample(sagc_candidates, 70)
-    selected_ir = random.sample(ir_candidates, 50)
-    selected_sab = random.sample(sab_candidates, 35)
-    selected_teach = random.sample(teach_candidates, 25)
+    for name, cfg in dataset_configs.items():
+        pool = cfg["pool"]
+        total = cfg["total"]
+        train_count = cfg["train"]
+        dev_count = cfg["dev"]
+        test_count = cfg["test"]
+        
+        if len(pool) < total:
+            print(f"[ERROR] Pool for {name} has only {len(pool)} items, but target total is {total}")
+            sys.exit(1)
+            
+        # Sample total required from pool (keep manual ordering intact to keep first 20 as dev_20 candidates if needed)
+        if name == "manual":
+            # For manual, keep the pool in original sequence order (don't random sample)
+            selected = pool[:total]
+        else:
+            selected = random.sample(pool, total)
+            
+        # Split selected into Train (60%), Dev (20%), Test (20%)
+        # For manual:
+        # First 30 go to Train, next 10 go to Dev, last 10 go to Test.
+        # This means the 10 manual Dev items will be manual_031 to manual_040 (or similar depending on pool order).
+        # We will put all 10 of these manual Dev items into dev_20.
+        train_items = selected[:train_count]
+        dev_items = selected[train_count:train_count+dev_count]
+        test_items = selected[train_count+dev_count:]
+        
+        train_split.extend(train_items)
+        dev_split.extend(dev_items)
+        test_split.extend(test_items)
+        
+        # Select candidates for dev_20 (which is a subset of dev split)
+        if name == "manual":
+            # All 10 manual Dev items go into dev_20
+            dev_20_manual.extend(dev_items)
+        else:
+            # 2 random items from the Dev split of each non-manual dataset go to dev_20
+            dev_20_non_manual.extend(random.sample(dev_items, 2))
+            
+    # Combine dev_20
+    dev_20 = dev_20_manual + dev_20_non_manual
     
-    # 3. Combine non-manual candidates and shuffle deterministically
-    non_manual_pool = selected_ambik + selected_sagc + selected_ir + selected_sab + selected_teach
-    random.shuffle(non_manual_pool)
-    print(f"Total non-manual pool: {len(non_manual_pool)}")
-    
-    # 4. Construct splits
-    # Target sizes:
-    # dev_100: 100 total (20 manual MVE + 30 manual other + 50 non-manual)
-    # train: 60 total (all non-manual)
-    # test: 150 total (all non-manual)
-    
-    dev_100_non_manual = non_manual_pool[:50]
-    train_pool = non_manual_pool[50:110]
-    test_pool = non_manual_pool[110:260]
-    
-    dev_100 = manual_mve + manual_other + dev_100_non_manual
-    dev_20 = manual_mve
-    train = train_pool
-    test = test_pool
-    
-    print(f"Split sizes: dev_20={len(dev_20)}, dev_100={len(dev_100)}, train={len(train)}, test={len(test)}")
+    print(f"Constructed splits:")
+    print(f"  - Train: {len(train_split)} examples")
+    print(f"  - Dev (dev_80): {len(dev_split)} examples")
+    print(f"  - Test: {len(test_split)} examples")
+    print(f"  - dev_20 subset: {len(dev_20)} examples")
     
     # Set split attribute on each record and validate through Example schema
     def prepare_and_write(examples_list, split_name, output_path):
@@ -109,43 +139,24 @@ def main():
         print(f"Wrote {len(validated_lines)} validated examples to {output_path}")
         
     prepare_and_write(dev_20, "dev_20", processed_dir / "dev_20.jsonl")
-    prepare_and_write(dev_100, "dev_100", processed_dir / "dev_100.jsonl")
-    prepare_and_write(train, "train", processed_dir / "train.jsonl")
-    prepare_and_write(test, "test", processed_dir / "test.jsonl")
+    prepare_and_write(dev_split, "dev_80", processed_dir / "dev_80.jsonl")
+    prepare_and_write(train_split, "train", processed_dir / "train.jsonl")
+    prepare_and_write(test_split, "test", processed_dir / "test.jsonl")
     
     # 5. Write manifest.json
     manifest = {
-        "frozen_date": "2026-07-03",
+        "frozen_date": "2026-07-04",
         "random_seed": 42,
         "split_sizes": {
             "dev_20": len(dev_20),
-            "dev_100": len(dev_100),
-            "train": len(train),
-            "test": len(test)
+            "dev_80": len(dev_split),
+            "train": len(train_split),
+            "test": len(test_split)
         },
         "source_dataset_counts": {
-            "dev_100": {
-                "manual": len(manual_examples),
-                "ambik": sum(1 for x in dev_100_non_manual if x["source_dataset"] == "ambik"),
-                "sagc": sum(1 for x in dev_100_non_manual if x["source_dataset"] == "sagc"),
-                "indirect_requests": sum(1 for x in dev_100_non_manual if x["source_dataset"] == "indirect_requests"),
-                "safe_agent_bench": sum(1 for x in dev_100_non_manual if x["source_dataset"] == "safe_agent_bench"),
-                "teach": sum(1 for x in dev_100_non_manual if x["source_dataset"] == "teach")
-            },
-            "train": {
-                "ambik": sum(1 for x in train if x["source_dataset"] == "ambik"),
-                "sagc": sum(1 for x in train if x["source_dataset"] == "sagc"),
-                "indirect_requests": sum(1 for x in train if x["source_dataset"] == "indirect_requests"),
-                "safe_agent_bench": sum(1 for x in train if x["source_dataset"] == "safe_agent_bench"),
-                "teach": sum(1 for x in train if x["source_dataset"] == "teach")
-            },
-            "test": {
-                "ambik": sum(1 for x in test if x["source_dataset"] == "ambik"),
-                "sagc": sum(1 for x in test if x["source_dataset"] == "sagc"),
-                "indirect_requests": sum(1 for x in test if x["source_dataset"] == "indirect_requests"),
-                "safe_agent_bench": sum(1 for x in test if x["source_dataset"] == "safe_agent_bench"),
-                "teach": sum(1 for x in test if x["source_dataset"] == "teach")
-            }
+            "dev_80": {name: cfg["dev"] for name, cfg in dataset_configs.items()},
+            "train": {name: cfg["train"] for name, cfg in dataset_configs.items()},
+            "test": {name: cfg["test"] for name, cfg in dataset_configs.items()}
         }
     }
     
@@ -154,13 +165,10 @@ def main():
     print("Wrote manifest.json")
     
     # 6. Generate data selection log summary (Table 7)
-    # Write summary statistics to console
-    print("\n--- Data Selection Summary ---")
-    for dataset in ["manual", "ambik", "sagc", "indirect_requests", "safe_agent_bench", "teach"]:
-        included = manifest["source_dataset_counts"]["dev_100"].get(dataset, 0) + \
-                   manifest["source_dataset_counts"]["train"].get(dataset, 0) + \
-                   manifest["source_dataset_counts"]["test"].get(dataset, 0)
-        print(f"Dataset: {dataset:<20} | Included: {included}")
+    print("\n--- Stratified Data Selection Summary ---")
+    for dataset in dataset_configs.keys():
+        included = dataset_configs[dataset]["total"]
+        print(f"Dataset: {dataset:<20} | Included: {included:<3} (Train={dataset_configs[dataset]['train']}, Dev={dataset_configs[dataset]['dev']}, Test={dataset_configs[dataset]['test']})")
 
 if __name__ == "__main__":
     main()

@@ -113,7 +113,7 @@ Example for `[pragmatic, referential, temporal]` with `risk_level = low`:
 
 ### 4.3 Human Approval Protocol
 
-Each included example must pass human approval before it can enter `dev_100`, `train`, or `test`:
+Each included example must pass human approval before it can enter `dev_80`, `train`, or `test`:
 
 1. Draft or map the example.
 2. Validate schema fields automatically.
@@ -133,8 +133,8 @@ Once `test.jsonl` is created and approved:
    {
      "frozen_date": "2026-09-05",
      "random_seed": 42,
-     "split_sizes": {"dev_100": 100, "train": 60, "test": 150, "dev_20_subset_of_dev_100": 20},
-     "total_unique_human_labelled_examples": 310,
+     "split_sizes": {"dev_80": 80, "train": 240, "test": 80, "dev_20_subset_of_dev_80": 20},
+     "total_unique_human_labelled_examples": 400,
      "primary_backend": "gemini-3.1-flash-lite-free-tier",
      "final_evaluation_risk_mode": "predicted",
      "git_commit_sha": "abc123def456...",
@@ -144,7 +144,7 @@ Once `test.jsonl` is created and approved:
 
 2. No edits to `test.jsonl` after the freeze date.
 3. Any discovered labelling errors go in `data/processed/errata.md` and the report limitations section.
-4. Development and tuning use only `dev_20`, `dev_100`, and optionally `train`.
+4. Development and tuning use only `dev_20`, `dev_80`, and optionally `train`.
 5. Final evaluation uses the frozen `test` split with predicted risk.
 
 ## Coding LLM Checklist
@@ -152,7 +152,7 @@ Once `test.jsonl` is created and approved:
 - [ ] Add validation that blocks final split export unless `human_approved == true`.
 - [ ] Enforce ambiguity consistency rules for `ambiguity_present`, `ambiguity_types`, `is_compound`, and `compound_ambiguity_count`.
 - [ ] Require `annotation_notes` for compound, medium+ risk, rejection, mapped, and TEACh examples.
-- [ ] Write manifest metadata with split sizes `dev_100=100`, `train=60`, `test=150`, and `dev_20` as a subset.
+- [ ] Write manifest metadata with split sizes `dev_80=80`, `train=240`, `test=80`, and `dev_20` as a subset.
 - [ ] Keep gold-risk evaluation behind an explicit diagnostic or ablation flag.
 
 ## Human Checklist

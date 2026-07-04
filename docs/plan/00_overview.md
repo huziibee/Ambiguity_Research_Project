@@ -26,16 +26,16 @@ Gold labels are human-approved labels. Final evaluation uses each system's **pre
 
 ### Binding Dataset Target
 
-The dataset target for the main study is **310 unique human-labelled examples**:
+The dataset target for the main study is **400 unique human-labelled examples**:
 
 | Split | Size | Role |
 |-------|------|------|
-| `dev_100` | 100 | Development, tuning, prompt iteration, and ablation debugging |
+| `dev_80` | 100 | Development, tuning, prompt iteration, and ablation debugging |
 | `train` | 60 | Optional development/training split only; not required for the primary Gemini experiment |
 | `test` | 150 | Frozen final evaluation split |
-| `dev_20` | 20 | Smoke-test subset of `dev_100`; never reported as final evidence |
+| `dev_20` | 20 | Smoke-test subset of `dev_80`; never reported as final evidence |
 
-`dev_20` must be a subset of `dev_100`, not an additional split. The 310-example total is counted as `dev_100 + train + test`, with `dev_20` included inside `dev_100`.
+`dev_20` must be a subset of `dev_80`, not an additional split. The 400-example total is counted as `dev_80 + train + test`, with `dev_20` included inside `dev_80`.
 
 TEACh remains included at a small count because the proposal promised it. It should be represented enough to support methodology alignment, but it must not dominate the dataset or delay the main experiment.
 
@@ -43,7 +43,7 @@ TEACh remains included at a small count because the proposal promised it. It sho
 
 | Priority | Meaning | Examples |
 |----------|---------|----------|
-| **MUST** | Project fails without it | Shared schema, 310 human-approved examples, `dev_100`, `test`, `dev_20` smoke subset, baselines, Gemini 3.1 Flash-Lite primary run, proposed router, predicted-risk final evaluation, Table 1, data selection log, failure analysis |
+| **MUST** | Project fails without it | Shared schema, 400 human-approved examples, `dev_80`, `test`, `dev_20` smoke subset, baselines, Gemini 3.1 Flash-Lite primary run, proposed router, predicted-risk final evaluation, Table 1, data selection log, failure analysis |
 | **SHOULD** | Strengthens the report significantly | Inter-annotator agreement, ablations, statistical tests, bootstrap CIs, risk and ambiguity breakdowns, TEACh small-count inclusion |
 | **COULD** | Useful if time permits | HPC acceleration, larger optional runs, safety API integration, SFT/local LLM experiments, rule-only manager ablation |
 
@@ -85,16 +85,16 @@ TEACh remains included at a small count because the proposal promised it. It sho
 
 - [ ] Keep all implementation plans consistent with Gemini 3.1 Flash-Lite free-tier as the primary experiment backend.
 - [ ] Treat HPC, SFT, local LLMs, synthetic expansion, and safety API calls as fallback or optional unless a later task explicitly changes scope.
-- [ ] Implement split logic so `dev_20` is sampled from `dev_100`, not counted as extra data.
+- [ ] Implement split logic so `dev_20` is sampled from `dev_80`, not counted as extra data.
 - [ ] Ensure final evaluation scripts use predicted risk by default and reserve gold risk for diagnostics or named ablations.
 - [ ] Preserve TEACh as a small-count included source in dataset planning and reports.
 
 ## Human Checklist
 
-- [ ] Confirm that the 310-example target is feasible with available human annotation time.
+- [ ] Confirm that the 400-example target is feasible with available human annotation time.
 - [ ] Approve the final dataset split sizes before any test-set freeze.
 - [ ] Verify that every gold label used in final evaluation has been human-approved.
-- [ ] Check that reported final results are from the frozen `test` split, not `dev_20` or `dev_100`.
+- [ ] Check that reported final results are from the frozen `test` split, not `dev_20` or `dev_80`.
 - [ ] Confirm that TEACh inclusion satisfies the proposal promise without displacing higher-value examples.
 
 ---

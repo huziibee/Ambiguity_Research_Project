@@ -20,16 +20,16 @@ Gold labels are human-approved labels. Final evaluation uses each system's **pre
 
 ### Binding Dataset Target
 
-The dataset target for the main study is **310 unique human-labelled examples**:
+The dataset target for the main study is **400 unique human-labelled examples**:
 
 | Split | Size | Role |
 |-------|------|------|
-| `dev_100` | 100 | Development, tuning, prompt iteration, and ablation debugging |
+| `dev_80` | 100 | Development, tuning, prompt iteration, and ablation debugging |
 | `train` | 60 | Optional development/training split only; not required for the primary Gemini experiment |
 | `test` | 150 | Frozen final evaluation split |
-| `dev_20` | 20 | Smoke-test subset of `dev_100`; never reported as final evidence |
+| `dev_20` | 20 | Smoke-test subset of `dev_80`; never reported as final evidence |
 
-`dev_20` must be a subset of `dev_100`, not an additional split. The 310-example total is counted as `dev_100 + train + test`, with `dev_20` included inside `dev_100`.
+`dev_20` must be a subset of `dev_80`, not an additional split. The 400-example total is counted as `dev_80 + train + test`, with `dev_20` included inside `dev_80`.
 
 TEACh remains included at a small count because the proposal promised it. It should be represented enough to support methodology alignment, but it must not dominate the dataset or delay the main experiment.
 
@@ -37,7 +37,7 @@ TEACh remains included at a small count because the proposal promised it. It sho
 
 | Priority | Meaning | Examples |
 |----------|---------|----------|
-| **MUST** | Project fails without it | Shared schema, 310 human-approved examples, `dev_100`, `test`, `dev_20` smoke subset, baselines, Gemini 3.1 Flash-Lite primary run, proposed router, predicted-risk final evaluation, Table 1, data selection log, failure analysis |
+| **MUST** | Project fails without it | Shared schema, 400 human-approved examples, `dev_80`, `test`, `dev_20` smoke subset, baselines, Gemini 3.1 Flash-Lite primary run, proposed router, predicted-risk final evaluation, Table 1, data selection log, failure analysis |
 | **SHOULD** | Strengthens the report significantly | Inter-annotator agreement, ablations, statistical tests, bootstrap CIs, risk and ambiguity breakdowns, TEACh small-count inclusion |
 | **COULD** | Useful if time permits | HPC acceleration, larger optional runs, safety API integration, SFT/local LLM experiments, rule-only manager ablation |
 
@@ -79,16 +79,16 @@ TEACh remains included at a small count because the proposal promised it. It sho
 
 - [ ] Keep all implementation plans consistent with Gemini 3.1 Flash-Lite free-tier as the primary experiment backend.
 - [ ] Treat HPC, SFT, local LLMs, synthetic expansion, and safety API calls as fallback or optional unless a later task explicitly changes scope.
-- [ ] Implement split logic so `dev_20` is sampled from `dev_100`, not counted as extra data.
+- [ ] Implement split logic so `dev_20` is sampled from `dev_80`, not counted as extra data.
 - [ ] Ensure final evaluation scripts use predicted risk by default and reserve gold risk for diagnostics or named ablations.
 - [ ] Preserve TEACh as a small-count included source in dataset planning and reports.
 
 ## Human Checklist
 
-- [ ] Confirm that the 310-example target is feasible with available human annotation time.
+- [ ] Confirm that the 400-example target is feasible with available human annotation time.
 - [ ] Approve the final dataset split sizes before any test-set freeze.
 - [ ] Verify that every gold label used in final evaluation has been human-approved.
-- [ ] Check that reported final results are from the frozen `test` split, not `dev_20` or `dev_100`.
+- [ ] Check that reported final results are from the frozen `test` split, not `dev_20` or `dev_80`.
 - [ ] Confirm that TEACh inclusion satisfies the proposal promise without displacing higher-value examples.
 
 ---
@@ -101,9 +101,9 @@ TEACh remains included at a small count because the proposal promised it. It sho
 
 The project is done only when final frozen-test evidence can answer the research question. The primary experiment uses **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed systems. HPC is only a fallback/accelerator if Gemini throttles or later optional larger runs are explicitly approved.
 
-All final main-result metrics must be computed on the frozen `test` split of **150 human-approved examples** using **predicted risk**. Gold risk may appear only in diagnostic tables, annotation summaries, and optional ablations.
+All final main-result metrics must be computed on the frozen `test` split of **80 human-approved examples** using **predicted risk**. Gold risk may appear only in diagnostic tables, annotation summaries, and optional ablations.
 
-`dev_20` outputs are smoke-test artifacts and must not be presented as final empirical evidence. `dev_20` is a subset of `dev_100`, not an additional dataset split.
+`dev_20` outputs are smoke-test artifacts and must not be presented as final empirical evidence. `dev_20` is a subset of `dev_80`, not an additional dataset split.
 
 ## Required Tables
 
@@ -115,7 +115,7 @@ All final main-result metrics must be computed on the frozen `test` split of **1
 | Table 4 | Routing accuracy by predicted risk level, with gold-risk diagnostic comparison if needed | Test risk-awareness under realistic inference |
 | Table 5 | Routing accuracy by ambiguity type | Test type-awareness |
 | Table 6 | Strategy confusion matrix for proposed manager | Reveal routing error patterns |
-| Table 7 | Data selection summary | Show raw -> excluded -> 310 human-approved included counts |
+| Table 7 | Data selection summary | Show raw -> excluded -> 400 human-approved included counts |
 | Table 8 | IAA summary | Defend annotation reliability |
 | Table 9 | McNemar test and bootstrap 95% CIs | Support statistical interpretation |
 | Table 10 | Failure analysis summary with representative cases | Demonstrate understanding and limitations |
@@ -171,7 +171,7 @@ Smoke-test outputs should be saved under a clearly labelled path such as `result
 
 - [ ] Confirm Table 1 answers the research question directly.
 - [ ] Confirm Tables 2-6 explain where the result comes from.
-- [ ] Confirm Tables 7-8 make the 310-example human-approved dataset and labels credible.
+- [ ] Confirm Tables 7-8 make the 400-example human-approved dataset and labels credible.
 - [ ] Confirm Table 10 and limitations honestly discuss failures.
 - [ ] Confirm no smoke-test or synthetic-only result is presented as the main result.
 - [ ] Confirm final risk claims are based on predicted risk, with gold risk only diagnostic.
@@ -187,15 +187,15 @@ Phase 1 produces a working smoke-test experiment on 20 examples. This must be bu
 
 `dev_20` is not final evidence. It is a plumbing check. The final research question is answered only by the frozen held-out `test` split of 150 human-approved examples.
 
-`dev_20` must be a subset of `dev_100`, not a separate source of 20 additional examples. The smoke test should use **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed calls. HPC, SFT, and local model training must not be introduced to complete the MVE.
+`dev_20` must be a subset of `dev_80`, not a separate source of 20 additional examples. The smoke test should use **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed calls. HPC, SFT, and local model training must not be introduced to complete the MVE.
 
 ## Phase 1 Deliverables
 
 | Deliverable | Concrete requirement |
 |-------------|----------------------|
 | `src/schema.py` | Pydantic v2 models for `Example`, `ManagerInput`, and `ManagerOutput`, including `risk_mode="predicted"` |
-| `data/processed/dev_100.jsonl` | 100 human-approved development examples |
-| `data/processed/dev_20.jsonl` | 20-example subset of `dev_100`, validated against schema and covering all five routing strategies |
+| `data/processed/dev_80.jsonl` | 80 human-approved development examples |
+| `data/processed/dev_20.jsonl` | 20-example subset of `dev_80`, validated against schema and covering all five routing strategies |
 | 4 baselines | `always_clarify`, `always_resolve`, `degree_based`, `direct_llm` each produce valid `ManagerOutput` |
 | Proposed router | Gemini 3.1 Flash-Lite-compatible staged pipeline and deterministic router produce valid `ManagerOutput` |
 | `src/evaluation/metrics.py` | Computes strict primary and supporting metrics |
@@ -232,7 +232,7 @@ Heuristic fallback is allowed for smoke testing only. It is forbidden in final `
 ## Coding LLM Checklist
 
 - [ ] Ensure `dev_20` loads through `Example` with zero validation errors.
-- [ ] Generate `dev_20` from `dev_100`, not as an independent split.
+- [ ] Generate `dev_20` from `dev_80`, not as an independent split.
 - [ ] Ensure every system returns valid `ManagerOutput`.
 - [ ] Add or preserve `risk_mode="predicted"` support before any final-style run.
 - [ ] Cache and log Gemini 3.1 Flash-Lite calls if Gemini is used in the smoke test.
@@ -243,7 +243,7 @@ Heuristic fallback is allowed for smoke testing only. It is forbidden in final `
 - [ ] Read all 20 examples and confirm every gold strategy is reasonable.
 - [ ] Verify every risk label is defensible by the annotation rules.
 - [ ] Verify all five routing strategies appear at least once.
-- [ ] Confirm all 20 smoke examples are included in `dev_100`.
+- [ ] Confirm all 20 smoke examples are included in `dev_80`.
 - [ ] Confirm no `dev_20` number is used as evidence in the final report.
 - [ ] Confirm any Gemini free-tier call contains no sensitive/private data.
 
@@ -452,7 +452,7 @@ Example for `[pragmatic, referential, temporal]` with `risk_level = low`:
 
 ### 4.3 Human Approval Protocol
 
-Each included example must pass human approval before it can enter `dev_100`, `train`, or `test`:
+Each included example must pass human approval before it can enter `dev_80`, `train`, or `test`:
 
 1. Draft or map the example.
 2. Validate schema fields automatically.
@@ -472,8 +472,8 @@ Once `test.jsonl` is created and approved:
    {
      "frozen_date": "2026-09-05",
      "random_seed": 42,
-     "split_sizes": {"dev_100": 100, "train": 60, "test": 150, "dev_20_subset_of_dev_100": 20},
-     "total_unique_human_labelled_examples": 310,
+     "split_sizes": {"dev_80": 80, "train": 240, "test": 80, "dev_20_subset_of_dev_80": 20},
+     "total_unique_human_labelled_examples": 400,
      "primary_backend": "gemini-3.1-flash-lite-free-tier",
      "final_evaluation_risk_mode": "predicted",
      "git_commit_sha": "abc123def456...",
@@ -483,7 +483,7 @@ Once `test.jsonl` is created and approved:
 
 2. No edits to `test.jsonl` after the freeze date.
 3. Any discovered labelling errors go in `data/processed/errata.md` and the report limitations section.
-4. Development and tuning use only `dev_20`, `dev_100`, and optionally `train`.
+4. Development and tuning use only `dev_20`, `dev_80`, and optionally `train`.
 5. Final evaluation uses the frozen `test` split with predicted risk.
 
 ## Coding LLM Checklist
@@ -491,7 +491,7 @@ Once `test.jsonl` is created and approved:
 - [ ] Add validation that blocks final split export unless `human_approved == true`.
 - [ ] Enforce ambiguity consistency rules for `ambiguity_present`, `ambiguity_types`, `is_compound`, and `compound_ambiguity_count`.
 - [ ] Require `annotation_notes` for compound, medium+ risk, rejection, mapped, and TEACh examples.
-- [ ] Write manifest metadata with split sizes `dev_100=100`, `train=60`, `test=150`, and `dev_20` as a subset.
+- [ ] Write manifest metadata with split sizes `dev_80=80`, `train=240`, `test=80`, and `dev_20` as a subset.
 - [ ] Keep gold-risk evaluation behind an explicit diagnostic or ablation flag.
 
 ## Human Checklist
@@ -511,7 +511,7 @@ Once `test.jsonl` is created and approved:
 ## 5. Inter-Annotator Agreement Protocol
 
 > [!IMPORTANT]
-> IAA is mandatory for annotation credibility. It supports the claim that the 310 examples are human-labelled and that the labels are reliable enough for final evaluation.
+> IAA is mandatory for annotation credibility. It supports the claim that the 400 examples are human-labelled and that the labels are reliable enough for final evaluation.
 
 IAA evaluates the gold labels. It does not change the final-evaluation rule: systems are evaluated with predicted risk, while gold risk is used to score and diagnose those predictions.
 
@@ -611,9 +611,9 @@ After computing IAA:
 ## 6. Data Selection Logging
 
 > [!IMPORTANT]
-> Every mapper must log which examples it includes, which it excludes, and why. The examiner should be able to trace raw source material to the final 310 unique human-approved examples.
+> Every mapper must log which examples it includes, which it excludes, and why. The examiner should be able to trace raw source material to the final 400 unique human-approved examples.
 
-The final dataset target is 310 unique human-labelled examples split into `dev_100=100`, optional/development `train=60`, and `test=150`. `dev_20` is a subset of `dev_100` and must not be counted as additional data.
+The final dataset target is 400 unique human-labelled examples split into `dev_80=80`, optional/development `train=240`, and `test=80`. `dev_20` is a subset of `dev_80` and must not be counted as additional data.
 
 ### 6.1 Filtering Log Format
 
@@ -646,10 +646,10 @@ Each mapper writes records to `data/interim/filtering_log.jsonl`:
 Use these final decision values:
 
 - `included_candidate` - selected by mapper but not yet human-approved.
-- `included_human_approved` - reviewed and accepted for one of the 310 examples.
+- `included_human_approved` - reviewed and accepted for one of the 400 examples.
 - `excluded` - rejected before final dataset inclusion.
 - `duplicate` - excluded because it duplicates or near-duplicates another example.
-- `deferred` - held for possible replacement, not counted in the 310.
+- `deferred` - held for possible replacement, not counted in the 400.
 
 Common exclusion reasons:
 
@@ -677,7 +677,7 @@ Table 7 structure:
 | indirect_requests | TBD | TBD | TBD | dev/train/test counts | TBD |
 | safe_agent_bench | TBD | TBD | TBD | dev/train/test counts | TBD |
 | teach | small count required | TBD | TBD | dev/train/test counts | Insufficient usable dialogue context |
-| **Total** | TBD | TBD | **310** | `dev_100=100`, `train=60`, `test=150` | |
+| **Total** | TBD | TBD | **400** | `dev_80=80`, `train=240`, `test=80` | |
 
 Do not hand-write final counts. Generate them from logs and final JSONL files.
 
@@ -703,7 +703,7 @@ For every included human-approved example, the log or metadata must identify:
 ## Human Checklist
 
 - [ ] Review filtering-log reasons for excluded and included examples.
-- [ ] Confirm that the final included count is exactly 310 unique human-approved examples.
+- [ ] Confirm that the final included count is exactly 400 unique human-approved examples.
 - [ ] Verify that TEACh has a small but real included count because the proposal promised it.
 - [ ] Check that no source dataset dominates the final test split without justification.
 - [ ] Approve provenance notes for mapped, cleaned, or manually drafted examples.
@@ -716,12 +716,12 @@ For every included human-approved example, the log or metadata must identify:
 
 ## 7. Dataset Construction Plan
 
-The final dataset must contain **310 unique human-labelled examples**:
+The final dataset must contain **400 unique human-labelled examples**:
 
-- `dev_100`: 100 examples for development, prompt iteration, and tuning.
-- `train`: 60 examples for optional development/training experiments only.
-- `test`: 150 frozen examples for final evaluation.
-- `dev_20`: 20-example smoke-test subset of `dev_100`; not counted separately.
+- `dev_80`: 100 examples for development, prompt iteration, and tuning.
+- `train`: 240 examples for optional development/training experiments only.
+- `test`: 80 frozen examples for final evaluation.
+- `dev_20`: 20-example smoke-test subset of `dev_80`; not counted separately.
 
 Quality and label reliability matter more than maximizing size. Every final example must be human-approved.
 
@@ -773,31 +773,31 @@ The exact source counts can move during selection, but the final total and split
 | Source | Target Count | Priority | Role in Evaluation |
 |--------|--------------|----------|--------------------|
 | Manual compound examples | 50-70 | MUST | Ensures compound ambiguity coverage |
-| AmbiK | 60-80 | MUST | Ambiguity-focused coverage |
-| SaGC | 50-70 | MUST | Clear, ambiguous, and infeasible routing labels |
-| IndirectRequests | 30-50 | MUST | Pragmatic and indirect request coverage |
-| SafeAgentBench | 20-35 | SHOULD | Safety and rejection stress testing |
-| TEACh | 10-20 | MUST at small count | Multi-turn embodied dialogue promised in proposal |
+| AmbiK | 110 | MUST | Ambiguity-focused coverage |
+| SaGC | 100 | MUST | Clear, ambiguous, and infeasible routing labels |
+| IndirectRequests | 70 | MUST | Pragmatic and indirect request coverage |
+| SafeAgentBench | 45 | SHOULD | Safety and rejection stress testing |
+| TEACh | 25 | MUST at small count | Multi-turn embodied dialogue promised in proposal |
 
-The final included count across all sources must be exactly 310. If source availability forces changes, preserve split sizes and document the rationale in the data selection log.
+The final included count across all sources must be exactly 400. If source availability forces changes, preserve split sizes and document the rationale in the data selection log.
 
 ### 7.3 Construction Order
 
 | Step | What | Definition of Done |
 |------|------|--------------------|
 | 1 | Standardize source CSVs | `verify_standardization.py` passes |
-| 2 | Draft/select candidate examples | Candidate pool exceeds 310 and has provenance logs |
-| 3 | Build `dev_100` candidates | 100 examples cover all major strategy and risk paths |
-| 4 | Derive `dev_20` | 20 smoke examples sampled from `dev_100` |
-| 5 | Build optional `train` | 60 examples for optional development/training only |
-| 6 | Build candidate `test` | 150 examples held out from tuning |
-| 7 | Human approval pass | All 310 examples approved for labels, risk, strategy, and provenance |
+| 2 | Draft/select candidate examples | Candidate pool exceeds 400 and has provenance logs |
+| 3 | Build `dev_80` candidates | 80 examples cover all major strategy and risk paths |
+| 4 | Derive `dev_20` | 20 smoke examples sampled from `dev_80` |
+| 5 | Build optional `train` | 240 examples for optional development/training only |
+| 6 | Build candidate `test` | 80 examples held out from tuning |
+| 7 | Human approval pass | All 400 examples approved for labels, risk, strategy, and provenance |
 | 8 | IAA double annotation | 30 examples double-labelled; target kappa >= 0.75 |
 | 9 | Resolve disagreements | Final human-approved labels documented |
 | 10 | Freeze final splits | `manifest.json` written; `test.jsonl` read-only by policy |
 | 11 | Run primary experiment | Gemini 3.1 Flash-Lite free-tier first, predicted-risk mode |
 
-Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 310 human-labelled examples.
+Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 400 human-labelled examples.
 
 ### 7.4 Manual Compound Ambiguity Construction
 
@@ -821,8 +821,8 @@ Manual examples still require human approval and provenance notes. They are not 
 
 | Split | Size | Purpose | Used By |
 |-------|------|---------|---------|
-| `dev_100` | 100 | Development evaluation, prompt tuning, debugging, and ablation iteration | Development only |
-| `dev_20` | 20 subset of `dev_100` | Fast smoke testing | Development only |
+| `dev_80` | 100 | Development evaluation, prompt tuning, debugging, and ablation iteration | Development only |
+| `dev_20` | 20 subset of `dev_80` | Fast smoke testing | Development only |
 | `train` | 60 | Optional development/training experiments; not required for primary Gemini run | Optional only |
 | `test` | 150 | Frozen held-out final evaluation | Final results only |
 
@@ -847,8 +847,8 @@ The final `test` evaluation must:
 
 ## Coding LLM Checklist
 
-- [ ] Build final split generation around exactly 310 unique examples: `dev_100=100`, `train=60`, and `test=150`.
-- [ ] Generate `dev_20` as a deterministic subset of `dev_100`.
+- [ ] Build final split generation around exactly 400 unique examples: `dev_80=80`, `train=240`, and `test=80`.
+- [ ] Generate `dev_20` as a deterministic subset of `dev_80`.
 - [ ] Keep TEACh in the source plan with a small documented count.
 - [ ] Exclude synthetic rewrites from the core human-labelled dataset.
 - [ ] Make split scripts stratify by source, compound status, risk, strategy, and ambiguity type.
@@ -858,7 +858,7 @@ The final `test` evaluation must:
 
 - [ ] Approve the final source-count mix before freezing splits.
 - [ ] Verify every included example has human-approved labels and provenance.
-- [ ] Check that `dev_20` examples are a subset of `dev_100`.
+- [ ] Check that `dev_20` examples are a subset of `dev_80`.
 - [ ] Confirm that `test` contains enough compound and high-risk cases for meaningful analysis.
 - [ ] Review TEACh examples manually for sufficient dialogue context and proposal alignment.
 - [ ] Confirm optional `train` examples are not presented as evidence of mandatory SFT.
@@ -893,7 +893,7 @@ Preferred ambiguity degree:
 
 - Use N=5 slot-filling samples at temperature 0.7 if Gemini quota allows.
 - Compute mean pairwise Jaccard distance over predicted slot sets.
-- Tune thresholds only on `dev_100`.
+- Tune thresholds only on `dev_80`.
 
 Quota-aware fallback:
 
@@ -982,7 +982,7 @@ If compound:
 
 ## Context Sampling
 
-Context sampling is optional for the primary run because Gemini free-tier throttling is possible. If enabled, use it only with a fixed call budget and tune thresholds on `dev_100`. If disabled, report this as a limitation and use single-pass structured output confidence/uncertainty fields.
+Context sampling is optional for the primary run because Gemini free-tier throttling is possible. If enabled, use it only with a fixed call budget and tune thresholds on `dev_80`. If disabled, report this as a limitation and use single-pass structured output confidence/uncertainty fields.
 
 ## Coding LLM Checklist
 
@@ -1310,7 +1310,7 @@ If approved:
 - Use a small open-source instruct model compatible with available HPC GPUs.
 - Use LoRA/PEFT rather than full fine-tuning.
 - Train only on `train.jsonl`.
-- Never train on `dev_100` or `test`.
+- Never train on `dev_80` or `test`.
 - Save training config, seed, checkpoint, prompt template, and predictions.
 
 ## Serving
@@ -1329,7 +1329,7 @@ Do not silently replace the Gemini-first methodology.
 ## Coding LLM Checklist
 
 - [ ] Keep SFT code/config separate from primary Gemini configs.
-- [ ] Do not require SFT for `dev_20`, `dev_100`, or final cached Gemini evaluation.
+- [ ] Do not require SFT for `dev_20`, `dev_80`, or final cached Gemini evaluation.
 - [ ] If SFT is run, save training config, seed, checkpoint path, prompt format, and prediction cache.
 - [ ] Ensure direct local-LLM and proposed local-LLM variants use fair matching backbones.
 - [ ] Clearly label SFT outputs as fallback/extension outputs unless the whole methodology is revised.
@@ -1418,7 +1418,7 @@ risk-aware-ambiguity-manager/
   .env.example
   configs/
     dev_20.yaml
-    dev_100.yaml
+    dev_80.yaml
     final_eval.yaml
     ablation.yaml
     local_llm.yaml
@@ -1428,7 +1428,7 @@ risk-aware-ambiguity-manager/
     interim/filtering_log.jsonl
     manual/compound_50.jsonl
     processed/dev_20.jsonl
-    processed/dev_100.jsonl
+    processed/dev_80.jsonl
     processed/train.jsonl
     processed/test.jsonl
     processed/manifest.json
@@ -1625,20 +1625,20 @@ Use the available subset if a tool is not installed yet; document skipped checks
 
 ## Phase 2: Dataset and Annotation
 
-Goal: 310 labelled examples if feasible, frozen 150-example test set minimum.
+Goal: 400 labelled examples if feasible, frozen 80-example test set minimum.
 
 | Deliverable | Done when |
 |-------------|-----------|
 | `compound_50.jsonl` | human validated |
 | source mappers | interim files and filtering log exist |
-| split files | `dev_100`, `train`, `test`, manifest exist |
+| split files | `dev_80`, `train`, `test`, manifest exist |
 | IAA | kappa/Jaccard computed and adjudicated |
 
 ## Phase 3: Gemini Prompting and Baseline Refinement
 
 | Deliverable | Done when |
 |-------------|-----------|
-| Gemini structured prompts | validate on `dev_100` |
+| Gemini structured prompts | validate on `dev_80` |
 | predicted-risk path | primary config uses `predicted` |
 | baseline audit | no gold leakage |
 | HPC fallback scripts | available if Gemini throttles |
@@ -1680,7 +1680,7 @@ Only after primary results are reproducible:
 
 ## Minimum Viable Submission
 
-- [ ] frozen test set with at least 150 examples
+- [ ] frozen test set with at least 80 examples
 - [ ] all five systems evaluated
 - [ ] Table 1
 - [ ] at least no-type and no-risk ablations
@@ -1696,11 +1696,11 @@ Only after primary results are reproducible:
 - [ ] Do not start optional SFT/local-LLM work before Gemini-first evaluation is reproducible.
 - [ ] Produce cached predictions before statistics and figures.
 - [ ] Ensure every phase has concrete artifacts.
-- [ ] Keep fallback scope documented if the 310-example target is reduced.
+- [ ] Keep fallback scope documented if the 400-example target is reduced.
 
 ## Human Checklist
 
-- [ ] Approve any fallback from 310 examples to a smaller dataset.
+- [ ] Approve any fallback from 400 examples to a smaller dataset.
 - [ ] Check IAA and label quality before final prediction runs.
 - [ ] Confirm no prompt tuning happens after test freeze.
 - [ ] Review all final tables before writing interpretation.
@@ -1800,7 +1800,7 @@ Negative results are acceptable if the analysis is honest:
 - What are the active Gemini free-tier limits in AI Studio on the final run date?
 - Are HPC partition names and queue limits confirmed?
 - Is the external safety API available, or should it remain out of scope?
-- Is the 310-example target feasible, or is the documented fallback needed?
+- Is the 400-example target feasible, or is the documented fallback needed?
 
 ## Coding LLM Checklist
 

@@ -16,7 +16,7 @@ risk-aware-ambiguity-manager/
   .env.example
   configs/
     dev_20.yaml
-    dev_100.yaml
+    dev_80.yaml
     final_eval.yaml
     ablation.yaml
     local_llm.yaml
@@ -26,7 +26,7 @@ risk-aware-ambiguity-manager/
     interim/filtering_log.jsonl
     manual/compound_50.jsonl
     processed/dev_20.jsonl
-    processed/dev_100.jsonl
+    processed/dev_80.jsonl
     processed/train.jsonl
     processed/test.jsonl
     processed/manifest.json

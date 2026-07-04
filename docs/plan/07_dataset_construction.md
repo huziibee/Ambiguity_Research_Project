@@ -6,12 +6,12 @@ description: "Dataset standardization, target composition, construction order, m
 
 ## 7. Dataset Construction Plan
 
-The final dataset must contain **310 unique human-labelled examples**:
+The final dataset must contain **400 unique human-labelled examples**:
 
-- `dev_100`: 100 examples for development, prompt iteration, and tuning.
-- `train`: 60 examples for optional development/training experiments only.
-- `test`: 150 frozen examples for final evaluation.
-- `dev_20`: 20-example smoke-test subset of `dev_100`; not counted separately.
+- `dev_80`: 100 examples for development, prompt iteration, and tuning.
+- `train`: 240 examples for optional development/training experiments only.
+- `test`: 80 frozen examples for final evaluation.
+- `dev_20`: 20-example smoke-test subset of `dev_80`; not counted separately.
 
 Quality and label reliability matter more than maximizing size. Every final example must be human-approved.
 
@@ -63,31 +63,31 @@ The exact source counts can move during selection, but the final total and split
 | Source | Target Count | Priority | Role in Evaluation |
 |--------|--------------|----------|--------------------|
 | Manual compound examples | 50-70 | MUST | Ensures compound ambiguity coverage |
-| AmbiK | 60-80 | MUST | Ambiguity-focused coverage |
-| SaGC | 50-70 | MUST | Clear, ambiguous, and infeasible routing labels |
-| IndirectRequests | 30-50 | MUST | Pragmatic and indirect request coverage |
-| SafeAgentBench | 20-35 | SHOULD | Safety and rejection stress testing |
-| TEACh | 10-20 | MUST at small count | Multi-turn embodied dialogue promised in proposal |
+| AmbiK | 110 | MUST | Ambiguity-focused coverage |
+| SaGC | 100 | MUST | Clear, ambiguous, and infeasible routing labels |
+| IndirectRequests | 70 | MUST | Pragmatic and indirect request coverage |
+| SafeAgentBench | 45 | SHOULD | Safety and rejection stress testing |
+| TEACh | 25 | MUST at small count | Multi-turn embodied dialogue promised in proposal |
 
-The final included count across all sources must be exactly 310. If source availability forces changes, preserve split sizes and document the rationale in the data selection log.
+The final included count across all sources must be exactly 400. If source availability forces changes, preserve split sizes and document the rationale in the data selection log.
 
 ### 7.3 Construction Order
 
 | Step | What | Definition of Done |
 |------|------|--------------------|
 | 1 | Standardize source CSVs | `verify_standardization.py` passes |
-| 2 | Draft/select candidate examples | Candidate pool exceeds 310 and has provenance logs |
-| 3 | Build `dev_100` candidates | 100 examples cover all major strategy and risk paths |
-| 4 | Derive `dev_20` | 20 smoke examples sampled from `dev_100` |
-| 5 | Build optional `train` | 60 examples for optional development/training only |
-| 6 | Build candidate `test` | 150 examples held out from tuning |
-| 7 | Human approval pass | All 310 examples approved for labels, risk, strategy, and provenance |
+| 2 | Draft/select candidate examples | Candidate pool exceeds 400 and has provenance logs |
+| 3 | Build `dev_80` candidates | 80 examples cover all major strategy and risk paths |
+| 4 | Derive `dev_20` | 20 smoke examples sampled from `dev_80` |
+| 5 | Build optional `train` | 240 examples for optional development/training only |
+| 6 | Build candidate `test` | 80 examples held out from tuning |
+| 7 | Human approval pass | All 400 examples approved for labels, risk, strategy, and provenance |
 | 8 | IAA double annotation | 30 examples double-labelled; target kappa >= 0.75 |
 | 9 | Resolve disagreements | Final human-approved labels documented |
 | 10 | Freeze final splits | `manifest.json` written; `test.jsonl` read-only by policy |
 | 11 | Run primary experiment | Gemini 3.1 Flash-Lite free-tier first, predicted-risk mode |
 
-Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 310 human-labelled examples.
+Do not add synthetic test expansion to the core dataset. If synthetic rewrites are explored later, label them optional and keep them separate from the 400 human-labelled examples.
 
 ### 7.4 Manual Compound Ambiguity Construction
 
@@ -111,8 +111,8 @@ Manual examples still require human approval and provenance notes. They are not 
 
 | Split | Size | Purpose | Used By |
 |-------|------|---------|---------|
-| `dev_100` | 100 | Development evaluation, prompt tuning, debugging, and ablation iteration | Development only |
-| `dev_20` | 20 subset of `dev_100` | Fast smoke testing | Development only |
+| `dev_80` | 100 | Development evaluation, prompt tuning, debugging, and ablation iteration | Development only |
+| `dev_20` | 20 subset of `dev_80` | Fast smoke testing | Development only |
 | `train` | 60 | Optional development/training experiments; not required for primary Gemini run | Optional only |
 | `test` | 150 | Frozen held-out final evaluation | Final results only |
 
@@ -137,8 +137,8 @@ The final `test` evaluation must:
 
 ## Coding LLM Checklist
 
-- [ ] Build final split generation around exactly 310 unique examples: `dev_100=100`, `train=60`, and `test=150`.
-- [ ] Generate `dev_20` as a deterministic subset of `dev_100`.
+- [ ] Build final split generation around exactly 400 unique examples: `dev_80=80`, `train=240`, and `test=80`.
+- [ ] Generate `dev_20` as a deterministic subset of `dev_80`.
 - [ ] Keep TEACh in the source plan with a small documented count.
 - [ ] Exclude synthetic rewrites from the core human-labelled dataset.
 - [ ] Make split scripts stratify by source, compound status, risk, strategy, and ambiguity type.
@@ -148,7 +148,7 @@ The final `test` evaluation must:
 
 - [ ] Approve the final source-count mix before freezing splits.
 - [ ] Verify every included example has human-approved labels and provenance.
-- [ ] Check that `dev_20` examples are a subset of `dev_100`.
+- [ ] Check that `dev_20` examples are a subset of `dev_80`.
 - [ ] Confirm that `test` contains enough compound and high-risk cases for meaningful analysis.
 - [ ] Review TEACh examples manually for sufficient dialogue context and proposal alignment.
 - [ ] Confirm optional `train` examples are not presented as evidence of mandatory SFT.

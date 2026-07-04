@@ -8,9 +8,9 @@ description: "Required tables, figures, statistics, and saved artefacts that def
 
 The project is done only when final frozen-test evidence can answer the research question. The primary experiment uses **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed systems. HPC is only a fallback/accelerator if Gemini throttles or later optional larger runs are explicitly approved.
 
-All final main-result metrics must be computed on the frozen `test` split of **150 human-approved examples** using **predicted risk**. Gold risk may appear only in diagnostic tables, annotation summaries, and optional ablations.
+All final main-result metrics must be computed on the frozen `test` split of **80 human-approved examples** using **predicted risk**. Gold risk may appear only in diagnostic tables, annotation summaries, and optional ablations.
 
-`dev_20` outputs are smoke-test artifacts and must not be presented as final empirical evidence. `dev_20` is a subset of `dev_100`, not an additional dataset split.
+`dev_20` outputs are smoke-test artifacts and must not be presented as final empirical evidence. `dev_20` is a subset of `dev_80`, not an additional dataset split.
 
 ## Required Tables
 
@@ -22,7 +22,7 @@ All final main-result metrics must be computed on the frozen `test` split of **1
 | Table 4 | Routing accuracy by predicted risk level, with gold-risk diagnostic comparison if needed | Test risk-awareness under realistic inference |
 | Table 5 | Routing accuracy by ambiguity type | Test type-awareness |
 | Table 6 | Strategy confusion matrix for proposed manager | Reveal routing error patterns |
-| Table 7 | Data selection summary | Show raw -> excluded -> 310 human-approved included counts |
+| Table 7 | Data selection summary | Show raw -> excluded -> 400 human-approved included counts |
 | Table 8 | IAA summary | Defend annotation reliability |
 | Table 9 | McNemar test and bootstrap 95% CIs | Support statistical interpretation |
 | Table 10 | Failure analysis summary with representative cases | Demonstrate understanding and limitations |
@@ -78,7 +78,7 @@ Smoke-test outputs should be saved under a clearly labelled path such as `result
 
 - [ ] Confirm Table 1 answers the research question directly.
 - [ ] Confirm Tables 2-6 explain where the result comes from.
-- [ ] Confirm Tables 7-8 make the 310-example human-approved dataset and labels credible.
+- [ ] Confirm Tables 7-8 make the 400-example human-approved dataset and labels credible.
 - [ ] Confirm Table 10 and limitations honestly discuss failures.
 - [ ] Confirm no smoke-test or synthetic-only result is presented as the main result.
 - [ ] Confirm final risk claims are based on predicted risk, with gold risk only diagnostic.

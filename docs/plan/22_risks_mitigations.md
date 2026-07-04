@@ -27,7 +27,7 @@ description: "Project risks, mitigations, and human review obligations."
 - What are the active Gemini free-tier limits in AI Studio on the final run date?
 - Are HPC partition names and queue limits confirmed?
 - Is the external safety API available, or should it remain out of scope?
-- Is the 310-example target feasible, or is the documented fallback needed?
+- Is the 400-example target feasible, or is the documented fallback needed?
 
 ## Coding LLM Checklist
 

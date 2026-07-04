@@ -23,7 +23,7 @@ If approved:
 - Use a small open-source instruct model compatible with available HPC GPUs.
 - Use LoRA/PEFT rather than full fine-tuning.
 - Train only on `train.jsonl`.
-- Never train on `dev_100` or `test`.
+- Never train on `dev_80` or `test`.
 - Save training config, seed, checkpoint, prompt template, and predictions.
 
 ## Serving
@@ -42,7 +42,7 @@ Do not silently replace the Gemini-first methodology.
 ## Coding LLM Checklist
 
 - [ ] Keep SFT code/config separate from primary Gemini configs.
-- [ ] Do not require SFT for `dev_20`, `dev_100`, or final cached Gemini evaluation.
+- [ ] Do not require SFT for `dev_20`, `dev_80`, or final cached Gemini evaluation.
 - [ ] If SFT is run, save training config, seed, checkpoint path, prompt format, and prediction cache.
 - [ ] Ensure direct local-LLM and proposed local-LLM variants use fair matching backbones.
 - [ ] Clearly label SFT outputs as fallback/extension outputs unless the whole methodology is revised.

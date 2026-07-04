@@ -7,9 +7,9 @@ description: "Filtering log format, exclusion reasons, summary script, and Table
 ## 6. Data Selection Logging
 
 > [!IMPORTANT]
-> Every mapper must log which examples it includes, which it excludes, and why. The examiner should be able to trace raw source material to the final 310 unique human-approved examples.
+> Every mapper must log which examples it includes, which it excludes, and why. The examiner should be able to trace raw source material to the final 400 unique human-approved examples.
 
-The final dataset target is 310 unique human-labelled examples split into `dev_100=100`, optional/development `train=60`, and `test=150`. `dev_20` is a subset of `dev_100` and must not be counted as additional data.
+The final dataset target is 400 unique human-labelled examples split into `dev_80=80`, optional/development `train=240`, and `test=80`. `dev_20` is a subset of `dev_80` and must not be counted as additional data.
 
 ### 6.1 Filtering Log Format
 
@@ -42,10 +42,10 @@ Each mapper writes records to `data/interim/filtering_log.jsonl`:
 Use these final decision values:
 
 - `included_candidate` - selected by mapper but not yet human-approved.
-- `included_human_approved` - reviewed and accepted for one of the 310 examples.
+- `included_human_approved` - reviewed and accepted for one of the 400 examples.
 - `excluded` - rejected before final dataset inclusion.
 - `duplicate` - excluded because it duplicates or near-duplicates another example.
-- `deferred` - held for possible replacement, not counted in the 310.
+- `deferred` - held for possible replacement, not counted in the 400.
 
 Common exclusion reasons:
 
@@ -73,7 +73,7 @@ Table 7 structure:
 | indirect_requests | TBD | TBD | TBD | dev/train/test counts | TBD |
 | safe_agent_bench | TBD | TBD | TBD | dev/train/test counts | TBD |
 | teach | small count required | TBD | TBD | dev/train/test counts | Insufficient usable dialogue context |
-| **Total** | TBD | TBD | **310** | `dev_100=100`, `train=60`, `test=150` | |
+| **Total** | TBD | TBD | **400** | `dev_80=80`, `train=240`, `test=80` | |
 
 Do not hand-write final counts. Generate them from logs and final JSONL files.
 
@@ -99,7 +99,7 @@ For every included human-approved example, the log or metadata must identify:
 ## Human Checklist
 
 - [ ] Review filtering-log reasons for excluded and included examples.
-- [ ] Confirm that the final included count is exactly 310 unique human-approved examples.
+- [ ] Confirm that the final included count is exactly 400 unique human-approved examples.
 - [ ] Verify that TEACh has a small but real included count because the proposal promised it.
 - [ ] Check that no source dataset dominates the final test split without justification.
 - [ ] Approve provenance notes for mapped, cleaned, or manually drafted examples.

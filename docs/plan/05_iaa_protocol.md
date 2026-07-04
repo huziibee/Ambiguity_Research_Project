@@ -7,7 +7,7 @@ description: "Double-annotation subset design, IAA metrics, interpretation guida
 ## 5. Inter-Annotator Agreement Protocol
 
 > [!IMPORTANT]
-> IAA is mandatory for annotation credibility. It supports the claim that the 310 examples are human-labelled and that the labels are reliable enough for final evaluation.
+> IAA is mandatory for annotation credibility. It supports the claim that the 400 examples are human-labelled and that the labels are reliable enough for final evaluation.
 
 IAA evaluates the gold labels. It does not change the final-evaluation rule: systems are evaluated with predicted risk, while gold risk is used to score and diagnose those predictions.
 

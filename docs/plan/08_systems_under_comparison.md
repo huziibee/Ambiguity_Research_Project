@@ -28,7 +28,7 @@ Preferred ambiguity degree:
 
 - Use N=5 slot-filling samples at temperature 0.7 if Gemini quota allows.
 - Compute mean pairwise Jaccard distance over predicted slot sets.
-- Tune thresholds only on `dev_100`.
+- Tune thresholds only on `dev_80`.
 
 Quota-aware fallback:
 

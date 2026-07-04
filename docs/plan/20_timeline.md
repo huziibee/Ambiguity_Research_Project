@@ -16,20 +16,20 @@ description: "Phase-by-phase timeline, fallback plan, and minimum viable submiss
 
 ## Phase 2: Dataset and Annotation
 
-Goal: 310 labelled examples if feasible, frozen 150-example test set minimum.
+Goal: 400 labelled examples if feasible, frozen 80-example test set minimum.
 
 | Deliverable | Done when |
 |-------------|-----------|
 | `compound_50.jsonl` | human validated |
 | source mappers | interim files and filtering log exist |
-| split files | `dev_100`, `train`, `test`, manifest exist |
+| split files | `dev_80`, `train`, `test`, manifest exist |
 | IAA | kappa/Jaccard computed and adjudicated |
 
 ## Phase 3: Gemini Prompting and Baseline Refinement
 
 | Deliverable | Done when |
 |-------------|-----------|
-| Gemini structured prompts | validate on `dev_100` |
+| Gemini structured prompts | validate on `dev_80` |
 | predicted-risk path | primary config uses `predicted` |
 | baseline audit | no gold leakage |
 | HPC fallback scripts | available if Gemini throttles |
@@ -71,7 +71,7 @@ Only after primary results are reproducible:
 
 ## Minimum Viable Submission
 
-- [ ] frozen test set with at least 150 examples
+- [ ] frozen test set with at least 80 examples
 - [ ] all five systems evaluated
 - [ ] Table 1
 - [ ] at least no-type and no-risk ablations
@@ -87,11 +87,11 @@ Only after primary results are reproducible:
 - [ ] Do not start optional SFT/local-LLM work before Gemini-first evaluation is reproducible.
 - [ ] Produce cached predictions before statistics and figures.
 - [ ] Ensure every phase has concrete artifacts.
-- [ ] Keep fallback scope documented if the 310-example target is reduced.
+- [ ] Keep fallback scope documented if the 400-example target is reduced.
 
 ## Human Checklist
 
-- [ ] Approve any fallback from 310 examples to a smaller dataset.
+- [ ] Approve any fallback from 400 examples to a smaller dataset.
 - [ ] Check IAA and label quality before final prediction runs.
 - [ ] Confirm no prompt tuning happens after test freeze.
 - [ ] Review all final tables before writing interpretation.

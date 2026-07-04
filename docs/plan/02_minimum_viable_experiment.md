@@ -10,15 +10,15 @@ Phase 1 produces a working smoke-test experiment on 20 examples. This must be bu
 
 `dev_20` is not final evidence. It is a plumbing check. The final research question is answered only by the frozen held-out `test` split of 150 human-approved examples.
 
-`dev_20` must be a subset of `dev_100`, not a separate source of 20 additional examples. The smoke test should use **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed calls. HPC, SFT, and local model training must not be introduced to complete the MVE.
+`dev_20` must be a subset of `dev_80`, not a separate source of 20 additional examples. The smoke test should use **Gemini 3.1 Flash-Lite free-tier first** for LLM-backed calls. HPC, SFT, and local model training must not be introduced to complete the MVE.
 
 ## Phase 1 Deliverables
 
 | Deliverable | Concrete requirement |
 |-------------|----------------------|
 | `src/schema.py` | Pydantic v2 models for `Example`, `ManagerInput`, and `ManagerOutput`, including `risk_mode="predicted"` |
-| `data/processed/dev_100.jsonl` | 100 human-approved development examples |
-| `data/processed/dev_20.jsonl` | 20-example subset of `dev_100`, validated against schema and covering all five routing strategies |
+| `data/processed/dev_80.jsonl` | 80 human-approved development examples |
+| `data/processed/dev_20.jsonl` | 20-example subset of `dev_80`, validated against schema and covering all five routing strategies |
 | 4 baselines | `always_clarify`, `always_resolve`, `degree_based`, `direct_llm` each produce valid `ManagerOutput` |
 | Proposed router | Gemini 3.1 Flash-Lite-compatible staged pipeline and deterministic router produce valid `ManagerOutput` |
 | `src/evaluation/metrics.py` | Computes strict primary and supporting metrics |
@@ -55,7 +55,7 @@ Heuristic fallback is allowed for smoke testing only. It is forbidden in final `
 ## Coding LLM Checklist
 
 - [ ] Ensure `dev_20` loads through `Example` with zero validation errors.
-- [ ] Generate `dev_20` from `dev_100`, not as an independent split.
+- [ ] Generate `dev_20` from `dev_80`, not as an independent split.
 - [ ] Ensure every system returns valid `ManagerOutput`.
 - [ ] Add or preserve `risk_mode="predicted"` support before any final-style run.
 - [ ] Cache and log Gemini 3.1 Flash-Lite calls if Gemini is used in the smoke test.
@@ -66,7 +66,7 @@ Heuristic fallback is allowed for smoke testing only. It is forbidden in final `
 - [ ] Read all 20 examples and confirm every gold strategy is reasonable.
 - [ ] Verify every risk label is defensible by the annotation rules.
 - [ ] Verify all five routing strategies appear at least once.
-- [ ] Confirm all 20 smoke examples are included in `dev_100`.
+- [ ] Confirm all 20 smoke examples are included in `dev_80`.
 - [ ] Confirm no `dev_20` number is used as evidence in the final report.
 - [ ] Confirm any Gemini free-tier call contains no sensitive/private data.
 

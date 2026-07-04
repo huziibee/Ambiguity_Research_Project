@@ -55,7 +55,7 @@ If compound:
 
 ## Context Sampling
 
-Context sampling is optional for the primary run because Gemini free-tier throttling is possible. If enabled, use it only with a fixed call budget and tune thresholds on `dev_100`. If disabled, report this as a limitation and use single-pass structured output confidence/uncertainty fields.
+Context sampling is optional for the primary run because Gemini free-tier throttling is possible. If enabled, use it only with a fixed call budget and tune thresholds on `dev_80`. If disabled, report this as a limitation and use single-pass structured output confidence/uncertainty fields.
 
 ## Coding LLM Checklist
 
